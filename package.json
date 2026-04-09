@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,20 +14,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@thatopen/components": "^3.3.3",
-    "@thatopen/components-front": "latest",
-    "@thatopen/ui": "latest",
-    "three": "latest",
+    "@thatopen/components": "3.3.3",
+    "@thatopen/components-front": "3.3.3",
+    "@thatopen/ui": "3.3.7",
+    "three": "0.183.2",
     "web-ifc": "0.0.77"
   },
   "overrides": {
     "fast-xml-parser": "5.5.11"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/three": "latest",
-    "tsx": "latest",
-    "typescript": "latest",
-    "vite": "latest"
+    "@types/node": "25.5.2",
+    "@types/three": "0.183.1",
+    "tsx": "4.21.0",
+    "typescript": "6.0.2",
+    "vite": "8.0.8"
   }
 }

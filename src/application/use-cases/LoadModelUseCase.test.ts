@@ -23,7 +23,8 @@ describe("LoadModelUseCase", () => {
       hideClassificationGroup: async () => {},
       showClassificationGroup: async () => {},
       showAll: async () => {},
-      setTheme: () => {}
+      setTheme: () => {},
+      setCameraView: async () => {}
     };
 
     const useCase = new LoadModelUseCase(viewer);

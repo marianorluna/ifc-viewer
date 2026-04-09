@@ -1,5 +1,10 @@
 :root {
   --sidebar-width: 25vw;
+  --topbar-height: 48px;
+  /* Botones flotantes para abrir paneles (izquierda / derecha), mismo criterio visual */
+  --floating-panel-toggle-size: 38px;
+  --floating-panel-toggle-icon: 20px;
+  --floating-panel-toggle-radius: 8px;
   --page-bg: #f4f7fb;
   --text-color: #1f2937;
   --panel-bg: #ffffff;
@@ -64,57 +69,75 @@ body {
   color: var(--text-color);
 }
 
+/* =====================
+   GRID PRINCIPAL
+   ===================== */
+
 #app-grid {
   width: 100vw;
   height: 100vh;
   display: grid;
   grid-template:
-    "header header header" auto
+    "header header header" var(--topbar-height)
     "sidebar resizer content" 1fr
     / var(--sidebar-width) 8px 1fr;
   overflow: hidden;
 }
 
-#sidebar {
-  min-width: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: var(--panel-bg);
-  border-right: 1px solid var(--panel-border);
-}
-
-#viewer-container {
-  min-width: 0;
-  min-height: 0;
-  height: 100%;
-}
-
-#sidebar-resizer {
-  width: 8px;
-  height: 100%;
-  cursor: col-resize;
-  background: transparent;
-  border-left: 1px solid var(--panel-border);
-  border-right: 1px solid var(--panel-border);
-}
-
-#sidebar-resizer:hover {
-  background: rgb(59 130 246 / 18%);
-}
+/* =====================
+   TOPBAR
+   ===================== */
 
 #topbar {
   width: 100%;
   background: var(--panel-bg);
   border-bottom: 1px solid var(--panel-border);
-  padding: 8px 10px;
+  padding: 0 12px;
+  height: var(--topbar-height);
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-#topbar-actions {
+#topbar-brand {
   display: flex;
-  gap: 8px;
   align-items: center;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.topbar-logo-picture {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+#topbar-logo {
+  display: block;
+  width: auto;
+  height: 28px;
+  max-width: 140px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#topbar-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-color);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+#topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .topbar-button {
@@ -139,9 +162,410 @@ body {
   color: #fff;
 }
 
-#btn-sidebar-toggle {
+.topbar-icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.topbar-icon-btn svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+/* Un solo icono de tema: sol en claro, luna en oscuro */
+.topbar-theme-icon {
+  display: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+body[data-theme="light"] #icon-theme-light {
+  display: block;
+}
+
+body[data-theme="dark"] #icon-theme-dark {
+  display: block;
+}
+
+/* Hamburguesa solo tablet / móvil */
+.topbar-only-mobile {
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .topbar-only-mobile {
+    display: inline-flex !important;
+  }
+}
+
+/* =====================
+   SIDEBAR
+   ===================== */
+
+#sidebar {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--panel-border);
+}
+
+.sidebar-chrome {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+}
+
+.sidebar-chrome-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-collapse-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--tree-button-border);
+  border-radius: 8px;
+  background: var(--tree-button-bg);
+  color: var(--tree-button-text);
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.sidebar-collapse-btn svg {
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* Botón flotante para reabrir el panel (solo escritorio, panel colapsado) */
+.sidebar-expand-btn {
+  display: none;
+  position: fixed;
+  left: 8px;
+  top: calc(var(--topbar-height) + 10px);
+  z-index: 25;
+  width: var(--floating-panel-toggle-size);
+  height: var(--floating-panel-toggle-size);
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--floating-panel-toggle-radius);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--tree-button-text);
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 14%);
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.sidebar-expand-btn:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.sidebar-expand-btn svg {
+  width: var(--floating-panel-toggle-icon);
+  height: var(--floating-panel-toggle-icon);
+  pointer-events: none;
+}
+
+@media (min-width: 1025px) {
+  body.sidebar-desktop-collapsed #app-grid {
+    grid-template-columns: 0 0 1fr;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar {
+    border-right-width: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  body.sidebar-desktop-collapsed #sidebar-resizer {
+    display: none;
+  }
+
+  body.sidebar-desktop-collapsed .sidebar-expand-btn {
+    display: inline-flex;
+  }
+}
+
+#sidebar-resizer {
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  border-left: 1px solid var(--panel-border);
+  border-right: 1px solid var(--panel-border);
+}
+
+#sidebar-resizer:hover {
+  background: rgb(59 130 246 / 18%);
+}
+
+/* =====================
+   VISOR WRAPPER + OVERLAYS
+   ===================== */
+
+#viewer-wrapper {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#viewer-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* -- Panel de navegación de cámara (esquina superior derecha) -- */
+
+#viewer-nav {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 25;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 14%);
+  opacity: 0.94;
+  transition: opacity 0.15s ease, padding 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+#viewer-nav:hover {
+  opacity: 1;
+}
+
+/* Colapsado: mismo “chip” flotante que el botón izquierdo de la barra lateral */
+#viewer-nav.viewer-nav--collapsed {
+  padding: 0;
+  align-items: center;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  gap: 0;
+}
+
+.viewer-nav-toggle {
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tree-button-text);
+  cursor: pointer;
+  transition: background-color 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.viewer-nav-toggle:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+#viewer-nav.viewer-nav--collapsed .viewer-nav-toggle {
+  width: var(--floating-panel-toggle-size);
+  height: var(--floating-panel-toggle-size);
+  min-height: var(--floating-panel-toggle-size);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--floating-panel-toggle-radius);
+  background: var(--panel-bg);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 14%);
+}
+
+#viewer-nav.viewer-nav--collapsed .viewer-nav-toggle:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.viewer-nav-toggle-icon {
+  width: var(--floating-panel-toggle-icon);
+  height: var(--floating-panel-toggle-icon);
+  pointer-events: none;
+}
+
+#viewer-nav:not(.viewer-nav--collapsed) .viewer-nav-toggle-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.viewer-nav-toggle-icon--collapsed {
   display: none;
 }
+
+#viewer-nav.viewer-nav--collapsed .viewer-nav-toggle-icon--expanded {
+  display: none;
+}
+
+#viewer-nav.viewer-nav--collapsed .viewer-nav-toggle-icon--collapsed {
+  display: block;
+}
+
+.viewer-nav-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+#viewer-nav.viewer-nav--collapsed .viewer-nav-body {
+  display: none;
+}
+
+.viewer-nav-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tree-button-text);
+  border-radius: 6px;
+  width: 68px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+  white-space: nowrap;
+}
+
+.viewer-nav-btn svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.viewer-nav-btn:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.viewer-nav-btn:active {
+  background: rgb(59 130 246 / 22%);
+}
+
+.viewer-nav-sep {
+  width: 100%;
+  height: 1px;
+  background: var(--panel-border);
+  margin: 2px 0;
+}
+
+/* -- Toolbar de acciones flotante (centro inferior) -- */
+
+#viewer-toolbar {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 5px 8px;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 16%);
+  opacity: 0.94;
+  transition: opacity 0.15s ease;
+}
+
+#viewer-toolbar:hover {
+  opacity: 1;
+}
+
+.viewer-toolbar-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tree-button-text);
+  border-radius: 7px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+  white-space: nowrap;
+}
+
+.viewer-toolbar-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.viewer-toolbar-btn:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.viewer-toolbar-btn:active {
+  background: rgb(59 130 246 / 22%);
+}
+
+.viewer-toolbar-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--panel-border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* =====================
+   PROPIEDADES
+   ===================== */
 
 .properties-section {
   display: flex;
@@ -263,6 +687,10 @@ body {
   font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
 }
 
+/* =====================
+   ÁRBOL DE NAVEGACIÓN
+   ===================== */
+
 #storey-tree,
 #category-tree {
   display: flex;
@@ -305,6 +733,10 @@ body {
   border-color: #2563eb;
   color: #fff;
 }
+
+/* =====================
+   PANELS DEL SIDEBAR
+   ===================== */
 
 .sidebar-panel {
   background: var(--panel-bg);
@@ -375,22 +807,26 @@ body {
   display: none;
 }
 
+/* =====================
+   RESPONSIVE — TABLET/MÓVIL
+   ===================== */
+
 @media (max-width: 1024px) {
   #app-grid {
     grid-template:
-      "header" auto
+      "header" var(--topbar-height)
       "content" 1fr
       / 1fr;
   }
 
-  #viewer-container {
+  #viewer-wrapper {
     min-height: 0;
     height: 100%;
   }
 
   #sidebar {
     position: fixed;
-    top: 56px;
+    top: var(--topbar-height);
     left: 0;
     bottom: 0;
     width: min(88vw, 380px);
@@ -409,21 +845,37 @@ body {
   body.sidebar-open #sidebar {
     transform: translateX(0);
   }
-
-  #btn-sidebar-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
 }
 
 @media (max-width: 640px) {
-  #sidebar {
+  .sidebar-scroll {
     padding: 6px !important;
   }
 
-  .topbar-button {
+  .sidebar-chrome {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .topbar-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  #viewer-toolbar {
+    bottom: 10px;
+    padding: 4px 6px;
+    gap: 2px;
+  }
+
+  .viewer-toolbar-btn {
     font-size: 12px;
-    padding: 7px 10px;
+    padding: 5px 8px;
+    gap: 4px;
+  }
+
+  .viewer-toolbar-btn svg {
+    width: 13px;
+    height: 13px;
   }
 }

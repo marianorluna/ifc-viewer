@@ -33,7 +33,8 @@ describe("Navigation use-cases", () => {
       showAll: async () => {
         calls.push("showAll");
       },
-      setTheme: () => {}
+      setTheme: () => {},
+      setCameraView: async () => {}
     };
 
     await new BuildNavigationDataUseCase(viewer).execute();

@@ -1,6 +1,7 @@
 import type { SelectionMap } from "../entities/Selection";
 import type { ClassificationGroup, SpatialTreeNode } from "../entities/Classification";
 import type { ThemeMode } from "../entities/Theme";
+import type { CameraViewPreset } from "../entities/CameraView";
 
 export interface ViewerPort {
   init(container: HTMLElement): Promise<void>;
@@ -17,4 +18,5 @@ export interface ViewerPort {
   showClassificationGroup(classification: "storeys" | "categories", groupKey: string): Promise<void>;
   showAll(): Promise<void>;
   setTheme(mode: ThemeMode): void;
+  setCameraView(preset: CameraViewPreset): Promise<void>;
 }

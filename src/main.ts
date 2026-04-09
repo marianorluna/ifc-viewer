@@ -145,19 +145,43 @@ const app = async (): Promise<void> => {
   const showAllButton = getRequiredElement<HTMLButtonElement>("btn-show-all");
   const toggleThemeButton = getRequiredElement<HTMLButtonElement>("btn-toggle-theme");
   const sidebarToggleButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-toggle");
+  const sidebarCollapseButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-collapse");
+  const sidebarExpandButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-expand");
   const sidebarResizer = getRequiredElement<HTMLDivElement>("sidebar-resizer");
   const propertiesFormatted = getRequiredElement<HTMLElement>("properties-formatted");
   const propertiesJson = getRequiredElement<HTMLPreElement>("properties-json");
   const propertiesViewToggle = getRequiredElement<HTMLButtonElement>("btn-toggle-properties-view");
   const storeyRoot = getRequiredElement<HTMLElement>("storey-tree");
   const categoryRoot = getRequiredElement<HTMLElement>("category-tree");
+  const viewerNav = getRequiredElement<HTMLElement>("viewer-nav");
+  const viewerNavToggle = getRequiredElement<HTMLButtonElement>("btn-viewer-nav-toggle");
+  const navFitBtn = getRequiredElement<HTMLButtonElement>("btn-nav-fit");
+  const navIsoBtn = getRequiredElement<HTMLButtonElement>("btn-nav-iso");
+  const navTopBtn = getRequiredElement<HTMLButtonElement>("btn-nav-top");
+  const navFrontBtn = getRequiredElement<HTMLButtonElement>("btn-nav-front");
+  const navRightBtn = getRequiredElement<HTMLButtonElement>("btn-nav-right");
+
+  const VIEWER_NAV_COLLAPSED_KEY = "arqfi_viewer_nav_collapsed";
+
+  const applyViewerNavCollapsed = (collapsed: boolean): void => {
+    viewerNav.classList.toggle("viewer-nav--collapsed", collapsed);
+    viewerNavToggle.setAttribute("aria-expanded", String(!collapsed));
+    const expandLabel = "Mostrar panel de vistas de cámara";
+    const collapseLabel = "Ocultar panel de vistas de cámara";
+    viewerNavToggle.title = collapsed ? expandLabel : collapseLabel;
+    viewerNavToggle.setAttribute("aria-label", collapsed ? expandLabel : collapseLabel);
+    try {
+      sessionStorage.setItem(VIEWER_NAV_COLLAPSED_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* ignore quota / private mode */
+    }
+  };
 
   const viewerFacade = new ViewerFacade(new ThatOpenViewerAdapter());
   await viewerFacade.init(viewerContainer);
   let currentTheme: ThemeMode = "light";
   document.body.dataset.theme = currentTheme;
   viewerFacade.setTheme(currentTheme);
-  toggleThemeButton.textContent = "Tema: claro";
 
   let propertiesViewMode: "formatted" | "json" = "formatted";
   let lastPropertiesPayload: Record<string, unknown> | null = null;
@@ -199,6 +223,18 @@ const app = async (): Promise<void> => {
 
   sidebarToggleButton.addEventListener("click", () => {
     document.body.classList.toggle("sidebar-open");
+  });
+
+  sidebarCollapseButton.addEventListener("click", () => {
+    if (window.innerWidth <= 1024) {
+      document.body.classList.remove("sidebar-open");
+    } else {
+      document.body.classList.add("sidebar-desktop-collapsed");
+    }
+  });
+
+  sidebarExpandButton.addEventListener("click", () => {
+    document.body.classList.remove("sidebar-desktop-collapsed");
   });
 
   const setSidebarWidthByRatio = (ratio: number): void => {
@@ -264,9 +300,33 @@ const app = async (): Promise<void> => {
     currentTheme = currentTheme === "light" ? "dark" : "light";
     document.body.dataset.theme = currentTheme;
     viewerFacade.setTheme(currentTheme);
-    toggleThemeButton.textContent = currentTheme === "light" ? "Tema: claro" : "Tema: oscuro";
-    toggleThemeButton.classList.toggle("is-active", currentTheme === "dark");
+    const isDark = currentTheme === "dark";
+    toggleThemeButton.classList.toggle("is-active", isDark);
+    const nextLabel = isDark ? "Cambiar a tema claro" : "Cambiar a tema oscuro";
+    toggleThemeButton.title = nextLabel;
+    toggleThemeButton.setAttribute("aria-label", nextLabel);
   });
+
+  viewerNavToggle.addEventListener("click", () => {
+    applyViewerNavCollapsed(!viewerNav.classList.contains("viewer-nav--collapsed"));
+  });
+
+  let initialNavCollapsed = true;
+  try {
+    const stored = sessionStorage.getItem(VIEWER_NAV_COLLAPSED_KEY);
+    if (stored === "0") {
+      initialNavCollapsed = false;
+    }
+  } catch {
+    initialNavCollapsed = true;
+  }
+  applyViewerNavCollapsed(initialNavCollapsed);
+
+  navFitBtn.addEventListener("click", () => { void viewerFacade.setCameraView("fit"); });
+  navIsoBtn.addEventListener("click", () => { void viewerFacade.setCameraView("isometric"); });
+  navTopBtn.addEventListener("click", () => { void viewerFacade.setCameraView("top"); });
+  navFrontBtn.addEventListener("click", () => { void viewerFacade.setCameraView("front"); });
+  navRightBtn.addEventListener("click", () => { void viewerFacade.setCameraView("right"); });
 
   ifcInput.addEventListener("change", async () => {
     const file = ifcInput.files?.[0];
@@ -291,6 +351,8 @@ const app = async (): Promise<void> => {
   window.addEventListener("resize", () => {
     if (window.innerWidth > 1024) {
       document.body.classList.remove("sidebar-open");
+    } else {
+      document.body.classList.remove("sidebar-desktop-collapsed");
     }
   });
 };

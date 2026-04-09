@@ -4,6 +4,7 @@ import * as OBF from "@thatopen/components-front";
 import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ThemeMode } from "../../domain/entities/Theme";
+import type { CameraViewPreset } from "../../domain/entities/CameraView";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 import {
   bboxSizeAndVolume,
@@ -225,6 +226,39 @@ export class ThatOpenViewerAdapter implements ViewerPort {
   async showAll(): Promise<void> {
     const hider = this.components.get(OBC.Hider);
     await hider.set(true);
+  }
+
+  async setCameraView(preset: CameraViewPreset): Promise<void> {
+    if (!this.world) return;
+    const controls = this.world.camera.controls;
+
+    switch (preset) {
+      case "top":
+        await controls.setLookAt(0, 25, 0.01, 0, 0, 0, true);
+        break;
+      case "front":
+        await controls.setLookAt(0, 5, 25, 0, 5, 0, true);
+        break;
+      case "right":
+        await controls.setLookAt(25, 5, 0, 0, 5, 0, true);
+        break;
+      case "isometric":
+        await controls.setLookAt(12, 8, 12, 0, 0, 0, true);
+        break;
+      case "fit": {
+        const fragments = this.components.get(OBC.FragmentsManager);
+        const box = new THREE.Box3();
+        for (const [, model] of fragments.list) {
+          box.expandByObject(model.object);
+        }
+        if (!box.isEmpty()) {
+          await controls.fitToBox(box, true);
+        } else {
+          await controls.setLookAt(12, 8, 12, 0, 0, 0, true);
+        }
+        break;
+      }
+    }
   }
 
   setTheme(mode: ThemeMode): void {

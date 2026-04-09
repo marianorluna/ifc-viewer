@@ -1,6 +1,7 @@
 import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ThemeMode } from "../../domain/entities/Theme";
+import type { CameraViewPreset } from "../../domain/entities/CameraView";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 import { BuildNavigationDataUseCase } from "../use-cases/BuildNavigationDataUseCase";
 import { ClearSelectionUseCase } from "../use-cases/ClearSelectionUseCase";
@@ -77,6 +78,10 @@ export class ViewerFacade {
 
   setTheme(mode: ThemeMode): void {
     this.setThemeUseCase.execute(mode);
+  }
+
+  async setCameraView(preset: CameraViewPreset): Promise<void> {
+    await this.viewer.setCameraView(preset);
   }
 
   onSelectionChange(

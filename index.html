@@ -3,28 +3,75 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>That Open Viewer - Fase 1</title>
+    <title>ARQFI Viewer</title>
+    <link rel="icon" href="/arqfi-logo.webp" type="image/webp" />
+    <link rel="icon" href="/arqfi-logo.png" type="image/png" />
   </head>
-  <body>
+  <body class="sidebar-desktop-collapsed">
     <div id="app-grid">
+
       <header id="topbar" style="grid-area: header">
-        <div id="topbar-actions">
-          <button id="btn-sidebar-toggle" class="topbar-button" aria-label="Abrir/cerrar panel">☰</button>
-          <button id="btn-load" class="topbar-button">Cargar IFC</button>
-          <button id="btn-clear-selection" class="topbar-button">Limpiar selección</button>
-          <button id="btn-show-all" class="topbar-button">Mostrar todo</button>
-          <button id="btn-toggle-theme" class="topbar-button">Tema: claro</button>
+        <div id="topbar-brand">
+          <picture class="topbar-logo-picture">
+            <source srcset="/arqfi-logo.webp" type="image/webp" />
+            <img id="topbar-logo" src="/arqfi-logo.png" alt="ARQFI" decoding="async" />
+          </picture>
+          <span id="topbar-title">ARQFI Viewer</span>
+        </div>
+        <div id="topbar-end">
+          <button id="btn-toggle-theme" class="topbar-button topbar-icon-btn" aria-label="Cambiar a tema oscuro" title="Cambiar a tema oscuro">
+            <svg id="icon-theme-light" class="topbar-theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg id="icon-theme-dark" class="topbar-theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <button id="btn-sidebar-toggle" class="topbar-button topbar-icon-btn topbar-only-mobile" aria-label="Abrir panel lateral" title="Abrir panel lateral">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
         </div>
       </header>
 
-      <div id="sidebar" style="grid-area: sidebar; padding: 8px">
+      <div id="sidebar" style="grid-area: sidebar">
+        <div class="sidebar-chrome">
+          <span class="sidebar-chrome-title">Navegación BIM</span>
+          <button
+            type="button"
+            id="btn-sidebar-collapse"
+            class="sidebar-collapse-btn"
+            title="Ocultar barra lateral"
+            aria-label="Ocultar barra lateral"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3.5" y="5" width="17" height="14" rx="2"/>
+              <line x1="9" y1="5" x2="9" y2="19"/>
+              <circle cx="6.25" cy="9" r="1.1" fill="currentColor" stroke="none"/>
+              <circle cx="6.25" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+              <circle cx="6.25" cy="15" r="1.1" fill="currentColor" stroke="none"/>
+            </svg>
+          </button>
+        </div>
+        <div class="sidebar-scroll">
 
         <div class="sidebar-panel">
-          <div class="sidebar-panel-title">Navegación BIM</div>
+          <div class="sidebar-panel-title">Estructura del modelo</div>
 
           <div class="sidebar-section">
             <button type="button" class="sidebar-section-btn" aria-expanded="false" aria-controls="storey-section-body">
-              <span>Árbol espacial (storeys)</span>
+              <span>Niveles espaciales (storeys)</span>
               <svg class="sidebar-section-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
               </svg>
@@ -79,10 +126,120 @@
           </div>
         </div>
 
+        </div>
       </div>
 
       <div id="sidebar-resizer" style="grid-area: resizer" aria-hidden="true"></div>
-      <div id="viewer-container" style="grid-area: content; min-height: 80vh"></div>
+
+      <button
+        type="button"
+        id="btn-sidebar-expand"
+        class="sidebar-expand-btn"
+        title="Mostrar barra lateral"
+        aria-label="Mostrar barra lateral"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="14" rx="2"/>
+          <line x1="9" y1="5" x2="9" y2="19"/>
+          <circle cx="6.25" cy="9" r="1.1" fill="currentColor" stroke="none"/>
+          <circle cx="6.25" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+          <circle cx="6.25" cy="15" r="1.1" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+
+      <div id="viewer-wrapper" style="grid-area: content">
+        <div id="viewer-container"></div>
+
+        <!-- Controles de navegación — esquina superior derecha -->
+        <nav id="viewer-nav" class="viewer-nav--collapsed" aria-label="Vistas rápidas de cámara">
+          <button
+            type="button"
+            id="btn-viewer-nav-toggle"
+            class="viewer-nav-toggle"
+            aria-expanded="false"
+            aria-controls="viewer-nav-body"
+            title="Mostrar panel de vistas de cámara"
+          >
+            <svg class="viewer-nav-toggle-icon viewer-nav-toggle-icon--expanded" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            <svg class="viewer-nav-toggle-icon viewer-nav-toggle-icon--collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <div id="viewer-nav-body" class="viewer-nav-body">
+          <button class="viewer-nav-btn" id="btn-nav-fit" title="Ajustar a modelo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+            <span>Ajustar</span>
+          </button>
+          <div class="viewer-nav-sep"></div>
+          <button class="viewer-nav-btn" id="btn-nav-iso" title="Vista isométrica">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3L2 8.5l10 5.5 10-5.5L12 3z"/>
+              <path d="M2 15.5l10 5.5 10-5.5"/>
+              <path d="M2 12l10 5.5 10-5.5"/>
+            </svg>
+            <span>Iso</span>
+          </button>
+          <button class="viewer-nav-btn" id="btn-nav-top" title="Vista superior">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+            </svg>
+            <span>Top</span>
+          </button>
+          <button class="viewer-nav-btn" id="btn-nav-front" title="Vista frontal">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+            </svg>
+            <span>Frente</span>
+          </button>
+          <button class="viewer-nav-btn" id="btn-nav-right" title="Vista lateral derecha">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <polyline points="15 8 21 12 15 16"/>
+            </svg>
+            <span>Lateral</span>
+          </button>
+          </div>
+        </nav>
+
+        <!-- Barra de acciones flotante inferior -->
+        <div id="viewer-toolbar" role="toolbar" aria-label="Acciones del visor">
+          <button id="btn-load" class="viewer-toolbar-btn" title="Cargar archivo IFC">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Cargar IFC
+          </button>
+          <div class="viewer-toolbar-sep"></div>
+          <button id="btn-clear-selection" class="viewer-toolbar-btn" title="Limpiar selección actual">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/>
+              <path d="M14 11v6"/>
+            </svg>
+            Limpiar selección
+          </button>
+          <button id="btn-show-all" class="viewer-toolbar-btn" title="Mostrar todos los elementos">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            Mostrar todo
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <input id="ifc-input" type="file" accept=".ifc" style="display: none" />

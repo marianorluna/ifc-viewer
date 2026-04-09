@@ -9,7 +9,6 @@ import {
   setJsonPropertiesView
 } from "./presentation/properties/renderPropertiesView";
 import type { SelectionMap } from "./domain/entities/Selection";
-import "./style.css";
 
 const getRequiredElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);

@@ -5,7 +5,7 @@ import { ThatOpenViewerAdapter } from "./infrastructure/thatopen/ThatOpenViewerA
 import "./style.css";
 
 type BimGridElement = HTMLElement & {
-  layouts: Record<string, string>;
+  layouts?: Record<string, { template: string }>;
   layout?: string;
 };
 
@@ -19,15 +19,7 @@ const getRequiredElement = <T extends HTMLElement>(id: string): T => {
 };
 
 const setupLayout = (): void => {
-  const grid = getRequiredElement<BimGridElement>("app-grid");
-  grid.layouts = {
-    main: `
-      "header header" auto
-      "sidebar content" 1fr
-      / 440px 1fr
-    `
-  };
-  grid.layout = "main";
+  getRequiredElement<BimGridElement>("app-grid");
 };
 
 const renderGroupNode = (

@@ -6,7 +6,7 @@
     <title>That Open Viewer - Fase 1</title>
   </head>
   <body>
-    <bim-grid id="app-grid">
+    <div id="app-grid">
       <bim-toolbars-container style="grid-area: header">
         <bim-toolbar label="Viewer" active>
           <bim-toolbar-section label="Acciones">
@@ -34,7 +34,7 @@
       </div>
 
       <div id="viewer-container" style="grid-area: content; min-height: 80vh"></div>
-    </bim-grid>
+    </div>
 
     <input id="ifc-input" type="file" accept=".ifc" style="display: none" />
     <script type="module" src="/src/main.ts"></script>

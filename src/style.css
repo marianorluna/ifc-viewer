@@ -143,17 +143,124 @@ body {
   display: none;
 }
 
-#properties-content {
-  white-space: pre-wrap;
-  word-break: break-word;
+.properties-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.properties-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.properties-toggle {
+  background: var(--tree-button-bg);
+  color: var(--tree-button-text);
+  border: 1px solid var(--tree-button-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.properties-toggle:hover:not(:disabled) {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.properties-toggle.is-active {
+  background: #3b82f6;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.properties-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.properties-body {
   max-height: 70vh;
   overflow: auto;
-  background: var(--code-bg);
-  color: var(--code-text);
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 12px;
   border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: var(--panel-bg);
+}
+
+.properties-formatted {
+  min-height: 1.5rem;
+}
+
+.properties-formatted.properties-empty {
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-color);
+  opacity: 0.88;
+}
+
+.properties-json {
+  display: block;
+  margin: 0;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 11px;
+  line-height: 1.45;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  color: var(--code-text);
+  background: var(--code-bg);
+  box-sizing: border-box;
+  min-height: 4rem;
+}
+
+.properties-json[hidden],
+.properties-formatted[hidden] {
+  display: none;
+}
+
+.properties-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.properties-table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 10px;
+  vertical-align: top;
+  width: 38%;
+  border-bottom: 1px solid var(--panel-border);
+  color: var(--text-color);
+  background: var(--code-bg);
+}
+
+.properties-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--panel-border);
+  color: var(--text-color);
+}
+
+.properties-table tbody tr:last-child th,
+.properties-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.properties-value {
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.properties-type-hint {
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--bim-ui_bg-contrast-80);
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
 }
 
 #storey-tree,

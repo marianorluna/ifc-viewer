@@ -28,7 +28,23 @@
         </bim-panel>
         <bim-panel label="Propiedades" active>
           <bim-panel-section label="Elemento seleccionado">
-            <pre id="properties-content">Sin selección</pre>
+            <div class="properties-section">
+              <div class="properties-toolbar">
+                <button
+                  type="button"
+                  id="btn-toggle-properties-view"
+                  class="properties-toggle"
+                  aria-pressed="false"
+                  disabled
+                >
+                  Ver JSON
+                </button>
+              </div>
+              <div id="properties-body" class="properties-body">
+                <div id="properties-formatted" class="properties-formatted" role="region" aria-label="Propiedades del elemento"></div>
+                <pre id="properties-json" class="properties-json" hidden></pre>
+              </div>
+            </div>
           </bim-panel-section>
         </bim-panel>
       </div>

@@ -1,8 +1,15 @@
 import { Manager } from "@thatopen/ui";
 import { ViewerFacade } from "./application/services/ViewerFacade";
-import type { ClassificationGroup, SpatialTreeNode } from "./domain/entities/Classification";
 import type { ThemeMode } from "./domain/entities/Theme";
 import { ThatOpenViewerAdapter } from "./infrastructure/thatopen/ThatOpenViewerAdapter";
+import { parseElementProperties } from "./presentation/properties/parseElementProperties";
+import {
+  applyPropertiesViewMode,
+  renderPropertiesPlaceholder,
+  renderPropertiesTable,
+  setJsonPropertiesView
+} from "./presentation/properties/renderPropertiesView";
+import type { SelectionMap } from "./domain/entities/Selection";
 import "./style.css";
 
 type BimGridElement = HTMLElement & {
@@ -129,7 +136,9 @@ const app = async (): Promise<void> => {
   const toggleThemeButton = getRequiredElement<HTMLButtonElement>("btn-toggle-theme");
   const sidebarToggleButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-toggle");
   const sidebarResizer = getRequiredElement<HTMLDivElement>("sidebar-resizer");
-  const propertiesContent = getRequiredElement<HTMLElement>("properties-content");
+  const propertiesFormatted = getRequiredElement<HTMLElement>("properties-formatted");
+  const propertiesJson = getRequiredElement<HTMLPreElement>("properties-json");
+  const propertiesViewToggle = getRequiredElement<HTMLButtonElement>("btn-toggle-properties-view");
   const storeyRoot = getRequiredElement<HTMLElement>("storey-tree");
   const categoryRoot = getRequiredElement<HTMLElement>("category-tree");
 
@@ -140,11 +149,38 @@ const app = async (): Promise<void> => {
   viewerFacade.setTheme(currentTheme);
   toggleThemeButton.textContent = "Tema: claro";
 
-  viewerFacade.onSelectionChange(async (selection, properties) => {
+  let propertiesViewMode: "formatted" | "json" = "formatted";
+  let lastPropertiesPayload: Record<string, unknown> | null = null;
+
+  const refreshPropertiesPanel = (
+    selection: SelectionMap,
+    properties: Record<string, unknown> | null
+  ): void => {
     const hasSelection = Object.values(selection).some((ids) => ids.size > 0);
-    propertiesContent.textContent = hasSelection
-      ? JSON.stringify(properties, null, 2)
-      : "Sin seleccion";
+    lastPropertiesPayload = hasSelection ? properties : null;
+
+    if (!hasSelection) {
+      setJsonPropertiesView(propertiesJson, null);
+      renderPropertiesPlaceholder(propertiesFormatted, "Sin selección");
+      applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
+      return;
+    }
+
+    setJsonPropertiesView(propertiesJson, properties ?? null);
+
+    if (properties === null) {
+      renderPropertiesPlaceholder(propertiesFormatted, "No se pudieron cargar las propiedades.");
+      applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
+      return;
+    }
+
+    const rows = parseElementProperties(properties);
+    renderPropertiesTable(propertiesFormatted, rows);
+    applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, true);
+  };
+
+  viewerFacade.onSelectionChange(async (selection, properties) => {
+    refreshPropertiesPanel(selection, properties);
   });
 
   loadButton.addEventListener("click", () => {
@@ -187,9 +223,27 @@ const app = async (): Promise<void> => {
     sidebarResizer.addEventListener("pointercancel", onUp);
   });
 
+  propertiesViewToggle.addEventListener("click", () => {
+    if (propertiesViewToggle.disabled || lastPropertiesPayload === null) {
+      return;
+    }
+
+    propertiesViewMode = propertiesViewMode === "formatted" ? "json" : "formatted";
+    applyPropertiesViewMode(
+      propertiesViewMode,
+      propertiesFormatted,
+      propertiesJson,
+      propertiesViewToggle,
+      true
+    );
+  });
+
   clearSelectionButton.addEventListener("click", async () => {
     await viewerFacade.clearSelection();
-    propertiesContent.textContent = "Sin seleccion";
+    setJsonPropertiesView(propertiesJson, null);
+    renderPropertiesPlaceholder(propertiesFormatted, "Sin selección");
+    lastPropertiesPayload = null;
+    applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
   });
 
   showAllButton.addEventListener("click", async () => {
@@ -210,10 +264,13 @@ const app = async (): Promise<void> => {
       return;
     }
 
-    propertiesContent.textContent = "Cargando modelo...";
+    renderPropertiesPlaceholder(propertiesFormatted, "Cargando modelo…");
+    setJsonPropertiesView(propertiesJson, null);
+    lastPropertiesPayload = null;
+    applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
     await viewerFacade.loadIfc(file);
     await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
-    propertiesContent.textContent = "Modelo cargado. Selecciona un elemento.";
+    renderPropertiesPlaceholder(propertiesFormatted, "Modelo cargado. Selecciona un elemento.");
     ifcInput.value = "";
   });
 

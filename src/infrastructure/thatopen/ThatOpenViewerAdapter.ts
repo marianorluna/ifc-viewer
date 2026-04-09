@@ -169,6 +169,15 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     await hider.set(false, modelIdMap);
   }
 
+  async showClassificationGroup(classification: ClassificationKey, groupKey: string): Promise<void> {
+    const hider = this.components.get(OBC.Hider);
+    const modelIdMap = await this.getGroupModelIdMap(classification, groupKey);
+    if (!modelIdMap) {
+      return;
+    }
+    await hider.set(true, modelIdMap);
+  }
+
   async showAll(): Promise<void> {
     const hider = this.components.get(OBC.Hider);
     await hider.set(true);
@@ -188,7 +197,7 @@ export class ThatOpenViewerAdapter implements ViewerPort {
           }
         : {
             sceneBg: "#0f172a",
-            gridColor: "#3a3a3a"
+            gridColor: "#e2e8f0"
           };
 
     world.scene.three.background = new THREE.Color(palette.sceneBg);

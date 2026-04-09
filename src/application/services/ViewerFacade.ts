@@ -67,6 +67,10 @@ export class ViewerFacade {
     await this.hideClassificationGroupUseCase.execute(classification, groupKey);
   }
 
+  async showGroup(classification: ClassificationKey, groupKey: string): Promise<void> {
+    await this.viewer.showClassificationGroup(classification, groupKey);
+  }
+
   async showAll(): Promise<void> {
     await this.showAllUseCase.execute();
   }

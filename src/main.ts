@@ -27,8 +27,8 @@ const renderGroupNode = (
   root: HTMLElement,
   label: string,
   count: number,
-  onIsolate: () => Promise<void>,
-  onHide: () => Promise<void>
+  onIsolateToggle: (isolated: boolean) => Promise<void>,
+  onHideToggle: (hidden: boolean) => Promise<void>
 ): void => {
   const row = document.createElement("div");
   row.className = "tree-item";
@@ -38,15 +38,25 @@ const renderGroupNode = (
 
   const actions = document.createElement("div");
   const isolateButton = document.createElement("button");
+  isolateButton.className = "action-button";
   isolateButton.textContent = "Aislar";
+  let isolated = false;
   isolateButton.addEventListener("click", async () => {
-    await onIsolate();
+    isolated = !isolated;
+    await onIsolateToggle(isolated);
+    isolateButton.textContent = isolated ? "Resetear" : "Aislar";
+    isolateButton.classList.toggle("is-active", isolated);
   });
 
   const hideButton = document.createElement("button");
+  hideButton.className = "action-button";
   hideButton.textContent = "Ocultar";
+  let hidden = false;
   hideButton.addEventListener("click", async () => {
-    await onHide();
+    hidden = !hidden;
+    await onHideToggle(hidden);
+    hideButton.textContent = hidden ? "Mostrar" : "Ocultar";
+    hideButton.classList.toggle("is-active", hidden);
   });
 
   actions.append(isolateButton, hideButton);
@@ -73,8 +83,14 @@ const loadNavigationTrees = async (
         storeyRoot,
         node.label,
         node.count,
-        async () => viewerFacade.isolateGroup("storeys", node.id),
-        async () => viewerFacade.hideGroup("storeys", node.id)
+        async (isolated) =>
+          isolated
+            ? viewerFacade.isolateGroup("storeys", node.id)
+            : viewerFacade.showAll(),
+        async (hidden) =>
+          hidden
+            ? viewerFacade.hideGroup("storeys", node.id)
+            : viewerFacade.showGroup("storeys", node.id)
       );
     }
   }
@@ -88,8 +104,14 @@ const loadNavigationTrees = async (
         categoryRoot,
         node.label,
         node.itemCount,
-        async () => viewerFacade.isolateGroup("categories", node.key),
-        async () => viewerFacade.hideGroup("categories", node.key)
+        async (isolated) =>
+          isolated
+            ? viewerFacade.isolateGroup("categories", node.key)
+            : viewerFacade.showAll(),
+        async (hidden) =>
+          hidden
+            ? viewerFacade.hideGroup("categories", node.key)
+            : viewerFacade.showGroup("categories", node.key)
       );
     }
   }
@@ -106,6 +128,7 @@ const app = async (): Promise<void> => {
   const showAllButton = getRequiredElement<HTMLButtonElement>("btn-show-all");
   const toggleThemeButton = getRequiredElement<HTMLButtonElement>("btn-toggle-theme");
   const sidebarToggleButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-toggle");
+  const sidebarResizer = getRequiredElement<HTMLDivElement>("sidebar-resizer");
   const propertiesContent = getRequiredElement<HTMLElement>("properties-content");
   const storeyRoot = getRequiredElement<HTMLElement>("storey-tree");
   const categoryRoot = getRequiredElement<HTMLElement>("category-tree");
@@ -115,6 +138,7 @@ const app = async (): Promise<void> => {
   let currentTheme: ThemeMode = "light";
   document.body.dataset.theme = currentTheme;
   viewerFacade.setTheme(currentTheme);
+  toggleThemeButton.textContent = "Tema: claro";
 
   viewerFacade.onSelectionChange(async (selection, properties) => {
     const hasSelection = Object.values(selection).some((ids) => ids.size > 0);
@@ -131,6 +155,38 @@ const app = async (): Promise<void> => {
     document.body.classList.toggle("sidebar-open");
   });
 
+  const setSidebarWidthByRatio = (ratio: number): void => {
+    const clamped = Math.max(0.15, Math.min(0.5, ratio));
+    document.documentElement.style.setProperty("--sidebar-width", `${(clamped * 100).toFixed(2)}vw`);
+  };
+
+  setSidebarWidthByRatio(0.25);
+
+  sidebarResizer.addEventListener("pointerdown", (event) => {
+    if (window.innerWidth <= 1024) {
+      return;
+    }
+
+    event.preventDefault();
+    sidebarResizer.setPointerCapture(event.pointerId);
+
+    const onMove = (moveEvent: PointerEvent): void => {
+      const ratio = moveEvent.clientX / window.innerWidth;
+      setSidebarWidthByRatio(ratio);
+    };
+
+    const onUp = (upEvent: PointerEvent): void => {
+      sidebarResizer.releasePointerCapture(upEvent.pointerId);
+      sidebarResizer.removeEventListener("pointermove", onMove);
+      sidebarResizer.removeEventListener("pointerup", onUp);
+      sidebarResizer.removeEventListener("pointercancel", onUp);
+    };
+
+    sidebarResizer.addEventListener("pointermove", onMove);
+    sidebarResizer.addEventListener("pointerup", onUp);
+    sidebarResizer.addEventListener("pointercancel", onUp);
+  });
+
   clearSelectionButton.addEventListener("click", async () => {
     await viewerFacade.clearSelection();
     propertiesContent.textContent = "Sin seleccion";
@@ -144,7 +200,8 @@ const app = async (): Promise<void> => {
     currentTheme = currentTheme === "light" ? "dark" : "light";
     document.body.dataset.theme = currentTheme;
     viewerFacade.setTheme(currentTheme);
-    toggleThemeButton.setAttribute("label", currentTheme === "light" ? "Tema: claro" : "Tema: oscuro");
+    toggleThemeButton.textContent = currentTheme === "light" ? "Tema: claro" : "Tema: oscuro";
+    toggleThemeButton.classList.toggle("is-active", currentTheme === "dark");
   });
 
   ifcInput.addEventListener("change", async () => {

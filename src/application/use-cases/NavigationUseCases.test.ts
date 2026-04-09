@@ -29,6 +29,7 @@ describe("Navigation use-cases", () => {
       hideClassificationGroup: async (classification, groupKey) => {
         calls.push(`hide:${classification}:${groupKey}`);
       },
+      showClassificationGroup: async (_classification, _groupKey) => {},
       showAll: async () => {
         calls.push("showAll");
       },

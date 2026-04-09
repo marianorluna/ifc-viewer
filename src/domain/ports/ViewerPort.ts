@@ -14,6 +14,7 @@ export interface ViewerPort {
   getCategoryGroups(): Promise<ClassificationGroup[]>;
   isolateClassificationGroup(classification: "storeys" | "categories", groupKey: string): Promise<void>;
   hideClassificationGroup(classification: "storeys" | "categories", groupKey: string): Promise<void>;
+  showClassificationGroup(classification: "storeys" | "categories", groupKey: string): Promise<void>;
   showAll(): Promise<void>;
   setTheme(mode: ThemeMode): void;
 }

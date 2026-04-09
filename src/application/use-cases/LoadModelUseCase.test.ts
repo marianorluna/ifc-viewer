@@ -21,6 +21,7 @@ describe("LoadModelUseCase", () => {
       getCategoryGroups: async () => [],
       isolateClassificationGroup: async () => {},
       hideClassificationGroup: async () => {},
+      showClassificationGroup: async () => {},
       showAll: async () => {},
       setTheme: () => {}
     };

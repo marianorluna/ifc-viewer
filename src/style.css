@@ -1,4 +1,5 @@
 :root {
+  --sidebar-width: 25vw;
   --page-bg: #f5f6f8;
   --text-color: #1f2937;
   --panel-bg: #ffffff;
@@ -26,6 +27,14 @@ body[data-theme="dark"] {
   --tree-button-border: #4b5563;
   --code-bg: #0b1220;
   --code-text: #d9f7be;
+  --bim-ui_bg-base: #111827;
+  --bim-ui_bg-contrast-20: #1f2937;
+  --bim-ui_bg-contrast-40: #334155;
+  --bim-ui_bg-contrast-60: #4b5563;
+  --bim-ui_bg-contrast-80: #cbd5e1;
+  --bim-ui_bg-contrast-100: #f8fafc;
+  --bim-panel--c: #f8fafc;
+  --bim-label--c: #f8fafc;
 }
 
 html,
@@ -44,9 +53,9 @@ body {
   height: 100vh;
   display: grid;
   grid-template:
-    "header header" auto
-    "sidebar content" 1fr
-    / minmax(320px, 36vw) 1fr;
+    "header header header" auto
+    "sidebar resizer content" 1fr
+    / var(--sidebar-width) 8px 1fr;
   overflow: hidden;
 }
 
@@ -61,6 +70,19 @@ body {
   min-width: 0;
   min-height: 0;
   height: 100%;
+}
+
+#sidebar-resizer {
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  border-left: 1px solid var(--panel-border);
+  border-right: 1px solid var(--panel-border);
+}
+
+#sidebar-resizer:hover {
+  background: rgb(59 130 246 / 18%);
 }
 
 #topbar {
@@ -86,6 +108,18 @@ body {
   padding: 8px 12px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.topbar-button:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.topbar-button.is-active {
+  background: #3b82f6;
+  border-color: #2563eb;
+  color: #fff;
 }
 
 #btn-sidebar-toggle {
@@ -134,6 +168,18 @@ body {
   cursor: pointer;
   font-size: 11px;
   padding: 2px 6px;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.tree-item button:hover {
+  background: rgb(59 130 246 / 12%);
+  border-color: #3b82f6;
+}
+
+.tree-item button.is-active {
+  background: #3b82f6;
+  border-color: #2563eb;
+  color: #fff;
 }
 
 bim-panel,
@@ -167,6 +213,10 @@ bim-toolbar {
     transition: transform 0.2s ease;
     border-right: 1px solid var(--panel-border);
     box-shadow: 0 6px 18px rgb(0 0 0 / 25%);
+  }
+
+  #sidebar-resizer {
+    display: none;
   }
 
   body.sidebar-open #sidebar {

@@ -1,4 +1,7 @@
-import type { ElementPropertyRow } from "./parseElementProperties";
+import {
+  omitIfcGraphKeysForPropertiesPanel,
+  type ElementPropertyRow
+} from "./parseElementProperties";
 
 const EMPTY_CLASS = "properties-empty";
 
@@ -52,8 +55,8 @@ export function renderPropertiesPlaceholder(container: HTMLElement, message: str
 }
 
 export function setJsonPropertiesView(pre: HTMLPreElement, raw: Record<string, unknown> | null): void {
-  pre.textContent =
-    raw === null ? "" : JSON.stringify(raw, null, 2);
+  const visible = omitIfcGraphKeysForPropertiesPanel(raw);
+  pre.textContent = visible === null ? "" : JSON.stringify(visible, null, 2);
 }
 
 export function applyPropertiesViewMode(

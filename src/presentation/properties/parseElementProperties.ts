@@ -6,6 +6,42 @@ export type ElementPropertyRow = {
   type?: string;
 };
 
+/**
+ * Claves de subgrafo / relaciones IFC devueltas por `getItemsData` con árboles profundos.
+ * Omitidas en la tabla de propiedades y en la vista JSON del panel.
+ * Alineado con `IFC_ITEM_RELATIONS_CONFIG` en infraestructura.
+ */
+export const IFC_GRAPH_KEYS_OMITTED_FROM_PROPERTIES_PANEL: ReadonlySet<string> = new Set([
+  "IsDefinedBy",
+  "HasAssociations",
+  "IsTypedBy",
+  "HasPropertySets",
+  "DefinesOcurrence",
+  "AssociatedTo",
+  "MaterialConstituents",
+  "ForLayerSet",
+  "MaterialLayers",
+  "Materials"
+]);
+
+/** Copia superficial del payload sin relaciones IFC voluminosas (misma política que la tabla). */
+export function omitIfcGraphKeysForPropertiesPanel(
+  raw: Record<string, unknown> | null
+): Record<string, unknown> | null {
+  if (raw === null) {
+    return null;
+  }
+
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (!IFC_GRAPH_KEYS_OMITTED_FROM_PROPERTIES_PANEL.has(k)) {
+      out[k] = v;
+    }
+  }
+
+  return out;
+}
+
 function isIfcPropertyBag(x: unknown): x is { value: unknown; type?: unknown } {
   if (x === null || typeof x !== "object") {
     return false;
@@ -153,6 +189,10 @@ export function parseElementProperties(raw: Record<string, unknown> | null): Ele
   const rows: ElementPropertyRow[] = [];
 
   for (const [originalKey, cell] of entries) {
+    if (IFC_GRAPH_KEYS_OMITTED_FROM_PROPERTIES_PANEL.has(originalKey)) {
+      continue;
+    }
+
     if (isIfcPropertyBag(cell)) {
       const row: ElementPropertyRow = {
         key: originalKey,

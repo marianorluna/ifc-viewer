@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseElementProperties } from "./parseElementProperties";
+import {
+  omitIfcGraphKeysForPropertiesPanel,
+  parseElementProperties
+} from "./parseElementProperties";
 
 test("parseElementProperties extrae value/type al estilo IFC", () => {
   const rows = parseElementProperties({
@@ -36,4 +39,26 @@ test("parseElementProperties anida bolsas IFC", () => {
   });
 
   assert.equal(rows[0]?.value, "inner");
+});
+
+test("parseElementProperties oculta relaciones IFC en tabla", () => {
+  const rows = parseElementProperties({
+    Name: { value: "Muro", type: "IFCLABEL" },
+    IsDefinedBy: [{ _category: { value: "IFCELEMENTQUANTITY" } }],
+    HasAssociations: [{ _category: { value: "IFCMATERIALLAYERSETUSAGE" } }]
+  });
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0]?.key, "Name");
+});
+
+test("omitIfcGraphKeysForPropertiesPanel elimina las mismas claves que la tabla", () => {
+  const raw = {
+    Name: { value: "Muro" },
+    IsDefinedBy: [{ big: "tree" }],
+    _localId: { value: 1 }
+  };
+  const vis = omitIfcGraphKeysForPropertiesPanel(raw);
+  assert.deepEqual(Object.keys(vis ?? {}), ["Name", "_localId"]);
+  assert.equal(JSON.stringify(vis), JSON.stringify({ Name: raw.Name, _localId: raw._localId }));
 });

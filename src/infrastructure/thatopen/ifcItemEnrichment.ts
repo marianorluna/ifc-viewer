@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { IfcProjectUnits } from "./ifcProjectUnits";
 
 /**
  * Configuración alineada con el pipeline That Open (IDS / Properties) para traer
@@ -325,29 +326,79 @@ export function inferVolumeLabelUnit(n: number, linear: LengthLabelUnit): Volume
   return null;
 }
 
-function medidaKey(dimLabel: string, unit: LengthLabelUnit): string {
-  if (unit === null) {
+function medidaKey(dimLabel: string, unit: LengthLabelUnit | string | null): string {
+  if (unit === null || unit === "") {
     return `Medida: ${dimLabel}`;
   }
 
   return `Medida: ${dimLabel} (${unit})`;
 }
 
-function volumenKey(unit: VolumeLabelUnit): string {
-  if (unit === null) {
+function volumenKey(unit: VolumeLabelUnit | string | null): string {
+  if (unit === null || unit === "") {
     return "Medida: volumen";
   }
 
   return `Medida: volumen (${unit})`;
 }
 
+function formatLengthRawForProject(raw: number, len: IfcProjectUnits["length"]): string {
+  if (!Number.isFinite(raw)) {
+    return "—";
+  }
+
+  if (len.label === "mm") {
+    return String(Math.round(raw));
+  }
+
+  if (len.label === "m") {
+    return (Math.round(raw * 100) / 100).toFixed(2);
+  }
+
+  if (len.label === "cm" || len.label === "dm") {
+    return (Math.round(raw * 100) / 100).toFixed(2);
+  }
+
+  if (len.label === "ft") {
+    return (Math.round(raw * 1000) / 1000).toFixed(3);
+  }
+
+  return (Math.round(raw * 1e6) / 1e6).toFixed(6);
+}
+
+function formatVolumeRawForProject(raw: number, vol: IfcProjectUnits["volume"]): string {
+  if (!Number.isFinite(raw)) {
+    return "—";
+  }
+
+  if (vol.label === "mm³") {
+    return String(Math.round(raw));
+  }
+
+  if (vol.label === "m³") {
+    return (Math.round(raw * 100) / 100).toFixed(2);
+  }
+
+  if (vol.label === "cm³" || vol.label === "dm³") {
+    return (Math.round(raw * 100) / 100).toFixed(2);
+  }
+
+  return (Math.round(raw * 1000) / 1000).toFixed(3);
+}
+
+const GEOM_NOTE = " (aprox., geometría)";
+
 /**
  * Añade filas tipo “Medida: …” y “Material (IFC)” fusionadas al objeto del ítem
  * (mismo formato `{ value, type }` que el resto) para que el parser del panel las muestre.
+ *
+ * @param projectUnits Si se pasa, las cantidades IFC se interpretan en las unidades del archivo
+ * (`IfcUnitAssignment`) y el fallback de geometría convierte desde metros de escena.
  */
 export function mergeMeasurementMaterialOverlay(
   item: Record<string, unknown>,
-  bbox: { dx: number; dy: number; dz: number; volume: number } | null
+  bbox: { dx: number; dy: number; dz: number; volume: number } | null,
+  projectUnits: IfcProjectUnits | null = null
 ): Record<string, unknown> {
   const qMap = extractIfcQuantitiesMap(item);
   const materials = extractIfcMaterialNames(item);
@@ -362,6 +413,8 @@ export function mergeMeasurementMaterialOverlay(
     .map((c) => c.numeric);
 
   const linearLabelUnit = inferLinearLabelUnit(linearSamples);
+  const lenTag = projectUnits?.length.label ?? null;
+  const volTag = projectUnits?.volume.label ?? null;
 
   let d1 = 0;
   let d2 = 0;
@@ -381,42 +434,90 @@ export function mergeMeasurementMaterialOverlay(
   const fmtEnvLinear = (n: number): string => `${(Math.round(n * 100) / 100).toFixed(2)}${envNote}`;
   const fmtEnvVolume = (n: number): string => `${(Math.round(n * 100) / 100).toFixed(2)}${envNote}`;
 
+  const fmtBboxLinear = (dimMetres: number): string => {
+    if (projectUnits) {
+      const rawFile = dimMetres / projectUnits.length.metresPerUnit;
+      return `${formatLengthRawForProject(rawFile, projectUnits.length)}${GEOM_NOTE}`;
+    }
+
+    return fmtEnvLinear(dimMetres);
+  };
+
+  const fmtBboxVolume = (volMetresCubed: number): string => {
+    if (projectUnits) {
+      const rawFile = volMetresCubed / projectUnits.volume.cubicMetresPerUnit;
+      return `${formatVolumeRawForProject(rawFile, projectUnits.volume)}${GEOM_NOTE}`;
+    }
+
+    return fmtEnvVolume(volMetresCubed);
+  };
+
   const altoVal =
     heightCell !== undefined && heightCell.kind === "length"
-      ? formatLinearValue(heightCell.numeric, linearLabelUnit)
+      ? projectUnits
+        ? formatLengthRawForProject(heightCell.numeric, projectUnits.length)
+        : formatLinearValue(heightCell.numeric, linearLabelUnit)
       : hasBbox
-        ? fmtEnvLinear(d3)
+        ? fmtBboxLinear(d3)
         : "—";
   const largoVal =
     lengthCell !== undefined && lengthCell.kind === "length"
-      ? formatLinearValue(lengthCell.numeric, linearLabelUnit)
+      ? projectUnits
+        ? formatLengthRawForProject(lengthCell.numeric, projectUnits.length)
+        : formatLinearValue(lengthCell.numeric, linearLabelUnit)
       : hasBbox
-        ? fmtEnvLinear(d2)
+        ? fmtBboxLinear(d2)
         : "—";
   const anchoVal =
     widthCell !== undefined && widthCell.kind === "length"
-      ? formatLinearValue(widthCell.numeric, linearLabelUnit)
+      ? projectUnits
+        ? formatLengthRawForProject(widthCell.numeric, projectUnits.length)
+        : formatLinearValue(widthCell.numeric, linearLabelUnit)
       : hasBbox
-        ? fmtEnvLinear(d1)
+        ? fmtBboxLinear(d1)
         : "—";
 
   let volVal = "—";
-  let volKeyUnit: VolumeLabelUnit = null;
+  let volKeyUnit: VolumeLabelUnit | string | null = null;
   if (volumeCell?.kind === "volume") {
-    volKeyUnit = inferVolumeLabelUnit(volumeCell.numeric, linearLabelUnit);
-    volVal = formatVolumeValue(volumeCell.numeric, volKeyUnit);
+    if (projectUnits) {
+      volKeyUnit = projectUnits.volume.label;
+      volVal = formatVolumeRawForProject(volumeCell.numeric, projectUnits.volume);
+    } else {
+      const inferredVol = inferVolumeLabelUnit(volumeCell.numeric, linearLabelUnit);
+      volKeyUnit = inferredVol;
+      volVal = formatVolumeValue(volumeCell.numeric, inferredVol);
+    }
   } else if (hasBbox && hasBboxVolume(bbox!)) {
-    volKeyUnit = inferVolumeLabelUnit(vBox, linearLabelUnit);
-    volVal = formatVolumeValue(vBox, volKeyUnit);
-    if (volKeyUnit === null) {
-      volVal = fmtEnvVolume(vBox);
+    if (projectUnits) {
+      volKeyUnit = projectUnits.volume.label;
+      volVal = fmtBboxVolume(vBox);
+    } else {
+      const inferredVol = inferVolumeLabelUnit(vBox, linearLabelUnit);
+      volKeyUnit = inferredVol;
+      volVal = formatVolumeValue(vBox, inferredVol);
+      if (inferredVol === null) {
+        volVal = fmtEnvVolume(vBox);
+      }
     }
   }
 
-  const altoKey = medidaKey("alto", heightCell?.kind === "length" ? linearLabelUnit : null);
-  const largoKey = medidaKey("largo", lengthCell?.kind === "length" ? linearLabelUnit : null);
-  const anchoKey = medidaKey("ancho / espesor", widthCell?.kind === "length" ? linearLabelUnit : null);
-  const volKey = volumenKey(volumeCell?.kind === "volume" ? volKeyUnit : hasBbox ? volKeyUnit : null);
+  const altoKey = medidaKey("alto", projectUnits ? lenTag : heightCell?.kind === "length" ? linearLabelUnit : null);
+  const largoKey = medidaKey("largo", projectUnits ? lenTag : lengthCell?.kind === "length" ? linearLabelUnit : null);
+  const anchoKey = medidaKey(
+    "ancho / espesor",
+    projectUnits ? lenTag : widthCell?.kind === "length" ? linearLabelUnit : null
+  );
+
+  const volKey = volumenKey(
+    projectUnits
+      ? volTag
+      : volumeCell?.kind === "volume"
+        ? volKeyUnit
+        : hasBbox
+          ? volKeyUnit
+          : null
+  );
 
   const overlay: Record<string, unknown> = {
     [altoKey]: ifcTextBag(altoVal),

@@ -14,7 +14,8 @@
     "@thatopen/components": "^3.3.3",
     "@thatopen/components-front": "latest",
     "@thatopen/ui": "latest",
-    "three": "latest"
+    "three": "latest",
+    "web-ifc": "0.0.77"
   },
   "overrides": {
     "fast-xml-parser": "5.5.11"

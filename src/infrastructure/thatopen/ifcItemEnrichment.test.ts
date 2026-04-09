@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { IfcProjectUnits } from "./ifcProjectUnits";
 import {
   extractIfcMaterialNames,
   extractIfcQuantitiesMap,
@@ -122,4 +123,25 @@ test("mergeMeasurementMaterialOverlay redondea mm sin decimales", () => {
   assert.equal((merged["Medida: alto (mm)"] as { value: string }).value, "1500");
   assert.equal((merged["Medida: largo (mm)"] as { value: string }).value, "18410");
   assert.equal((merged["Medida: ancho / espesor (mm)"] as { value: string }).value, "280");
+});
+
+test("mergeMeasurementMaterialOverlay usa IfcProjectUnits (mm) aunque la heurística diría metros", () => {
+  const item = {
+    IsDefinedBy: [
+      {
+        _category: { value: "IFCELEMENTQUANTITY" },
+        Name: { value: "BaseQuantities" },
+        Quantities: [{ Name: { value: "Height" }, LengthValue: { value: 300, type: "IFCLENGTHMEASURE" } }]
+      }
+    ],
+    HasAssociations: []
+  } as Record<string, unknown>;
+
+  const units: IfcProjectUnits = {
+    length: { metresPerUnit: 0.001, label: "mm" },
+    volume: { cubicMetresPerUnit: 1e-9, label: "mm³" }
+  };
+
+  const merged = mergeMeasurementMaterialOverlay(item, null, units);
+  assert.equal((merged["Medida: alto (mm)"] as { value: string }).value, "300");
 });

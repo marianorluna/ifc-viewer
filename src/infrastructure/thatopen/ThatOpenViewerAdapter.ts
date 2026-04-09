@@ -11,6 +11,7 @@ import {
   mergeMeasurementMaterialOverlay,
   unionBoxes
 } from "./ifcItemEnrichment";
+import { loadIfcProjectUnitsFromBuffer, type IfcProjectUnits } from "./ifcProjectUnits";
 
 export class ThatOpenViewerAdapter implements ViewerPort {
   private static readonly STOREYS_CLASSIFICATION = "NavigationStoreys";
@@ -23,6 +24,8 @@ export class ThatOpenViewerAdapter implements ViewerPort {
   private highlighter?: OBF.Highlighter;
   private selectionCallback?: (selection: SelectionMap) => Promise<void> | void;
   private isIfcLoaderReady = false;
+  private readonly ifcSourceByModelId = new Map<string, Uint8Array>();
+  private readonly projectUnitsByModelId = new Map<string, IfcProjectUnits>();
 
   async init(container: HTMLElement): Promise<void> {
     const worlds = this.components.get(OBC.Worlds);
@@ -104,7 +107,36 @@ export class ThatOpenViewerAdapter implements ViewerPort {
       });
       this.isIfcLoaderReady = true;
     }
+    this.ifcSourceByModelId.set(modelId, Uint8Array.from(buffer));
+    this.projectUnitsByModelId.delete(modelId);
     await ifcLoader.load(buffer, false, modelId);
+  }
+
+  private getWebIfcWasmConfig(): { path: string; absolute: boolean } {
+    return {
+      path: `https://unpkg.com/web-ifc@${ThatOpenViewerAdapter.WEB_IFC_VERSION}/`,
+      absolute: true
+    };
+  }
+
+  private async resolveProjectUnits(modelId: string): Promise<IfcProjectUnits | null> {
+    const cached = this.projectUnitsByModelId.get(modelId);
+    if (cached) {
+      return cached;
+    }
+
+    const bytes = this.ifcSourceByModelId.get(modelId);
+    if (!bytes) {
+      return null;
+    }
+
+    try {
+      const units = await loadIfcProjectUnitsFromBuffer(bytes, this.getWebIfcWasmConfig());
+      this.projectUnitsByModelId.set(modelId, units);
+      return units;
+    } catch {
+      return null;
+    }
   }
 
   async getFirstSelectedProperties(selection: SelectionMap): Promise<Record<string, unknown> | null> {
@@ -135,8 +167,9 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     const boxes = await model.getBoxes([firstLocalId]);
     const mergedBox = unionBoxes(boxes);
     const dims = mergedBox ? bboxSizeAndVolume(mergedBox) : null;
+    const projectUnits = await this.resolveProjectUnits(modelId);
 
-    return mergeMeasurementMaterialOverlay(rawItem, dims);
+    return mergeMeasurementMaterialOverlay(rawItem, dims, projectUnits);
   }
 
   async buildNavigationData(): Promise<void> {

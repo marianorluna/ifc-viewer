@@ -13,7 +13,7 @@ Nota: para crear y mantener varias ramas reales, Git necesita al menos 1 commit 
 
 ## Estado General
 
-- Fase actual: `Fase 1`
+- Fase actual: `Fase 2`
 - Estado del roadmap: `En progreso`
 - Ultima actualizacion: 2026-04-09
 
@@ -61,12 +61,22 @@ Mundo 3D + carga de modelo + seleccion + propiedades con arquitectura por capas.
 Arbol espacial, filtros, aislamiento y clasificacion basica.
 
 ### Estado
-- [ ] No iniciada
+- [x] Implementada (pendiente validacion manual)
 
-### Checklist de inicio
-- [ ] Definir puertos/casos de uso de arbol espacial
-- [ ] Definir puertos/casos de uso de filtros e isolate
-- [ ] Diseñar UI de panel de arbol + filtros
+### Entregables implementados
+- Extension del puerto `ViewerPort` para navegacion, filtros y aislamiento
+- Casos de uso para arbol espacial, categorias, aislar, ocultar y mostrar todo
+- Adaptador de clasificacion con `Classifier.byIfcBuildingStorey` y `Classifier.byCategory`
+- Adaptador de visibilidad con `Hider` (isolate, hide, showAll)
+- UI de panel BIM con arbol de storeys y grupos por categoria
+- Acciones en toolbar: `Mostrar todo` + controles por nodo (`Aislar`, `Ocultar`)
+- Tests minimos de use-cases de navegacion/filtros
+
+### Checklist de cierre tecnico
+- [x] Arbol espacial navegable por storeys
+- [x] Filtros por categoria disponibles
+- [x] Aislar/ocultar/mostrar todo operativos
+- [x] Clasificacion inicial por agrupacion (storeys/categorias)
 
 ---
 

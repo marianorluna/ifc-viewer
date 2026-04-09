@@ -1,14 +1,19 @@
 import * as THREE from "three";
 import * as OBC from "@thatopen/components";
 import * as OBF from "@thatopen/components-front";
+import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 
 export class ThatOpenViewerAdapter implements ViewerPort {
+  private static readonly STOREYS_CLASSIFICATION = "NavigationStoreys";
+  private static readonly CATEGORIES_CLASSIFICATION = "NavigationCategories";
+
   private readonly components = new OBC.Components();
   private world?: OBC.SimpleWorld<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>;
   private highlighter?: OBF.Highlighter;
   private selectionCallback?: (selection: SelectionMap) => Promise<void> | void;
+  private isIfcLoaderReady = false;
 
   async init(container: HTMLElement): Promise<void> {
     const worlds = this.components.get(OBC.Worlds);
@@ -81,10 +86,13 @@ export class ThatOpenViewerAdapter implements ViewerPort {
 
   async loadIfcBuffer(buffer: Uint8Array, modelId: string): Promise<void> {
     const ifcLoader = this.components.get(OBC.IfcLoader);
-    await ifcLoader.setup({
-      autoSetWasm: false,
-      wasm: { path: "https://unpkg.com/web-ifc@0.0.74/", absolute: true }
-    });
+    if (!this.isIfcLoaderReady) {
+      await ifcLoader.setup({
+        autoSetWasm: false,
+        wasm: { path: "https://unpkg.com/web-ifc@0.0.74/", absolute: true }
+      });
+      this.isIfcLoaderReady = true;
+    }
     await ifcLoader.load(buffer, false, modelId);
   }
 
@@ -113,5 +121,93 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     }
 
     return firstItem as Record<string, unknown>;
+  }
+
+  async buildNavigationData(): Promise<void> {
+    const classifier = this.components.get(OBC.Classifier);
+    await classifier.byIfcBuildingStorey({
+      classificationName: ThatOpenViewerAdapter.STOREYS_CLASSIFICATION
+    });
+    await classifier.byCategory({
+      classificationName: ThatOpenViewerAdapter.CATEGORIES_CLASSIFICATION
+    });
+  }
+
+  async getSpatialTree(): Promise<SpatialTreeNode[]> {
+    const groups = await this.getGroups("storeys");
+    return groups.map((group) => ({
+      id: group.key,
+      label: group.label,
+      count: group.itemCount
+    }));
+  }
+
+  async getCategoryGroups(): Promise<ClassificationGroup[]> {
+    return this.getGroups("categories");
+  }
+
+  async isolateClassificationGroup(classification: ClassificationKey, groupKey: string): Promise<void> {
+    const hider = this.components.get(OBC.Hider);
+    const modelIdMap = await this.getGroupModelIdMap(classification, groupKey);
+    if (!modelIdMap) {
+      return;
+    }
+    await hider.isolate(modelIdMap);
+  }
+
+  async hideClassificationGroup(classification: ClassificationKey, groupKey: string): Promise<void> {
+    const hider = this.components.get(OBC.Hider);
+    const modelIdMap = await this.getGroupModelIdMap(classification, groupKey);
+    if (!modelIdMap) {
+      return;
+    }
+    await hider.set(false, modelIdMap);
+  }
+
+  async showAll(): Promise<void> {
+    const hider = this.components.get(OBC.Hider);
+    await hider.set(true);
+  }
+
+  private getClassificationName(classification: ClassificationKey): string {
+    return classification === "storeys"
+      ? ThatOpenViewerAdapter.STOREYS_CLASSIFICATION
+      : ThatOpenViewerAdapter.CATEGORIES_CLASSIFICATION;
+  }
+
+  private async getGroups(classification: ClassificationKey): Promise<ClassificationGroup[]> {
+    const classifier = this.components.get(OBC.Classifier);
+    const classificationName = this.getClassificationName(classification);
+    const groups = classifier.list.get(classificationName);
+    if (!groups) {
+      return [];
+    }
+
+    const result: ClassificationGroup[] = [];
+    for (const [groupName, groupData] of groups) {
+      const modelIdMap = await groupData.get();
+      const itemCount = Object.values(modelIdMap).reduce((acc, ids) => acc + ids.size, 0);
+      result.push({
+        key: groupName,
+        label: groupName,
+        itemCount
+      });
+    }
+
+    return result.sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  private async getGroupModelIdMap(
+    classification: ClassificationKey,
+    groupKey: string
+  ): Promise<OBC.ModelIdMap | null> {
+    const classifier = this.components.get(OBC.Classifier);
+    const classificationName = this.getClassificationName(classification);
+    const groups = classifier.list.get(classificationName);
+    const group = groups?.get(groupKey);
+    if (!group) {
+      return null;
+    }
+    return group.get();
   }
 }

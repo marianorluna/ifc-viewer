@@ -15,7 +15,13 @@ describe("LoadModelUseCase", () => {
       clearSelection: async () => {},
       loadIfcBuffer,
       onSelectionChange: () => {},
-      getFirstSelectedProperties: async () => null
+      getFirstSelectedProperties: async () => null,
+      buildNavigationData: async () => {},
+      getSpatialTree: async () => [],
+      getCategoryGroups: async () => [],
+      isolateClassificationGroup: async () => {},
+      hideClassificationGroup: async () => {},
+      showAll: async () => {}
     };
 
     const useCase = new LoadModelUseCase(viewer);

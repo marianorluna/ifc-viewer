@@ -11,10 +11,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@thatopen/components": "latest",
+    "@thatopen/components": "^3.3.3",
     "@thatopen/components-front": "latest",
     "@thatopen/ui": "latest",
     "three": "latest"
+  },
+  "overrides": {
+    "fast-xml-parser": "5.5.11"
   },
   "devDependencies": {
     "@types/node": "latest",

@@ -12,11 +12,20 @@
           <bim-toolbar-section label="Acciones">
             <bim-button id="btn-load" label="Cargar IFC"></bim-button>
             <bim-button id="btn-clear-selection" label="Limpiar selección"></bim-button>
+            <bim-button id="btn-show-all" label="Mostrar todo"></bim-button>
           </bim-toolbar-section>
         </bim-toolbar>
       </bim-toolbars-container>
 
       <div id="sidebar" style="grid-area: sidebar; padding: 8px">
+        <bim-panel label="Navegación BIM" active>
+          <bim-panel-section label="Árbol espacial (storeys)">
+            <div id="storey-tree"></div>
+          </bim-panel-section>
+          <bim-panel-section label="Clasificación por categoría">
+            <div id="category-tree"></div>
+          </bim-panel-section>
+        </bim-panel>
         <bim-panel label="Propiedades" active>
           <bim-panel-section label="Elemento seleccionado">
             <pre id="properties-content">Sin selección</pre>

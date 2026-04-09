@@ -1,3 +1,33 @@
+:root {
+  --page-bg: #f5f6f8;
+  --text-color: #1f2937;
+  --panel-bg: #ffffff;
+  --panel-border: #d7dce4;
+  --tree-bg: #f3f5f7;
+  --tree-border: #d7dce4;
+  --tree-text: #1f2937;
+  --tree-button-bg: #ffffff;
+  --tree-button-text: #1f2937;
+  --tree-button-border: #c8d0db;
+  --code-bg: #f8fafc;
+  --code-text: #0f172a;
+}
+
+body[data-theme="dark"] {
+  --page-bg: #0f172a;
+  --text-color: #e5e7eb;
+  --panel-bg: #111827;
+  --panel-border: #263244;
+  --tree-bg: #1f2937;
+  --tree-border: #334155;
+  --tree-text: #e5e7eb;
+  --tree-button-bg: #111827;
+  --tree-button-text: #f3f4f6;
+  --tree-button-border: #4b5563;
+  --code-bg: #0b1220;
+  --code-text: #d9f7be;
+}
+
 html,
 body {
   margin: 0;
@@ -5,6 +35,8 @@ body {
   height: 100%;
   overflow: hidden;
   font-family: Arial, sans-serif;
+  background: var(--page-bg);
+  color: var(--text-color);
 }
 
 #app-grid {
@@ -14,7 +46,50 @@ body {
   grid-template:
     "header header" auto
     "sidebar content" 1fr
-    / 440px 1fr;
+    / minmax(320px, 36vw) 1fr;
+  overflow: hidden;
+}
+
+#sidebar {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--panel-border);
+}
+
+#viewer-container {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+#topbar {
+  width: 100%;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--panel-border);
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+
+#topbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.topbar-button {
+  border: 1px solid var(--tree-button-border);
+  background: var(--tree-button-bg);
+  color: var(--tree-button-text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#btn-sidebar-toggle {
+  display: none;
 }
 
 #properties-content {
@@ -22,11 +97,12 @@ body {
   word-break: break-word;
   max-height: 70vh;
   overflow: auto;
-  background: #111;
-  color: #d9f7be;
+  background: var(--code-bg);
+  color: var(--code-text);
   padding: 8px;
   border-radius: 6px;
   font-size: 12px;
+  border: 1px solid var(--panel-border);
 }
 
 #storey-tree,
@@ -42,20 +118,75 @@ body {
   gap: 6px;
   align-items: center;
   justify-content: space-between;
-  background: #1e1e1e;
-  color: #eee;
-  border: 1px solid #2f2f2f;
+  background: var(--tree-bg);
+  color: var(--tree-text);
+  border: 1px solid var(--tree-border);
   border-radius: 6px;
   padding: 6px;
   font-size: 12px;
 }
 
 .tree-item button {
-  background: #2b2b2b;
-  color: #fff;
-  border: 1px solid #3f3f3f;
+  background: var(--tree-button-bg);
+  color: var(--tree-button-text);
+  border: 1px solid var(--tree-button-border);
   border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
   padding: 2px 6px;
+}
+
+bim-panel,
+bim-toolbar {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+}
+
+@media (max-width: 1024px) {
+  #app-grid {
+    grid-template:
+      "header" auto
+      "content" 1fr
+      / 1fr;
+  }
+
+  #viewer-container {
+    min-height: 0;
+    height: 100%;
+  }
+
+  #sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    width: min(88vw, 380px);
+    max-width: 380px;
+    z-index: 20;
+    transform: translateX(-102%);
+    transition: transform 0.2s ease;
+    border-right: 1px solid var(--panel-border);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 25%);
+  }
+
+  body.sidebar-open #sidebar {
+    transform: translateX(0);
+  }
+
+  #btn-sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  #sidebar {
+    padding: 6px !important;
+  }
+
+  .topbar-button {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
 }

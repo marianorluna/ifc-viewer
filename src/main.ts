@@ -1,6 +1,7 @@
 import { Manager } from "@thatopen/ui";
 import { ViewerFacade } from "./application/services/ViewerFacade";
 import type { ClassificationGroup, SpatialTreeNode } from "./domain/entities/Classification";
+import type { ThemeMode } from "./domain/entities/Theme";
 import { ThatOpenViewerAdapter } from "./infrastructure/thatopen/ThatOpenViewerAdapter";
 import "./style.css";
 
@@ -100,15 +101,20 @@ const app = async (): Promise<void> => {
 
   const viewerContainer = getRequiredElement<HTMLDivElement>("viewer-container");
   const ifcInput = getRequiredElement<HTMLInputElement>("ifc-input");
-  const loadButton = getRequiredElement<HTMLElement>("btn-load");
-  const clearSelectionButton = getRequiredElement<HTMLElement>("btn-clear-selection");
-  const showAllButton = getRequiredElement<HTMLElement>("btn-show-all");
+  const loadButton = getRequiredElement<HTMLButtonElement>("btn-load");
+  const clearSelectionButton = getRequiredElement<HTMLButtonElement>("btn-clear-selection");
+  const showAllButton = getRequiredElement<HTMLButtonElement>("btn-show-all");
+  const toggleThemeButton = getRequiredElement<HTMLButtonElement>("btn-toggle-theme");
+  const sidebarToggleButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-toggle");
   const propertiesContent = getRequiredElement<HTMLElement>("properties-content");
   const storeyRoot = getRequiredElement<HTMLElement>("storey-tree");
   const categoryRoot = getRequiredElement<HTMLElement>("category-tree");
 
   const viewerFacade = new ViewerFacade(new ThatOpenViewerAdapter());
   await viewerFacade.init(viewerContainer);
+  let currentTheme: ThemeMode = "light";
+  document.body.dataset.theme = currentTheme;
+  viewerFacade.setTheme(currentTheme);
 
   viewerFacade.onSelectionChange(async (selection, properties) => {
     const hasSelection = Object.values(selection).some((ids) => ids.size > 0);
@@ -121,6 +127,10 @@ const app = async (): Promise<void> => {
     ifcInput.click();
   });
 
+  sidebarToggleButton.addEventListener("click", () => {
+    document.body.classList.toggle("sidebar-open");
+  });
+
   clearSelectionButton.addEventListener("click", async () => {
     await viewerFacade.clearSelection();
     propertiesContent.textContent = "Sin seleccion";
@@ -128,6 +138,13 @@ const app = async (): Promise<void> => {
 
   showAllButton.addEventListener("click", async () => {
     await viewerFacade.showAll();
+  });
+
+  toggleThemeButton.addEventListener("click", () => {
+    currentTheme = currentTheme === "light" ? "dark" : "light";
+    document.body.dataset.theme = currentTheme;
+    viewerFacade.setTheme(currentTheme);
+    toggleThemeButton.setAttribute("label", currentTheme === "light" ? "Tema: claro" : "Tema: oscuro");
   });
 
   ifcInput.addEventListener("change", async () => {
@@ -145,6 +162,12 @@ const app = async (): Promise<void> => {
 
   window.addEventListener("beforeunload", () => {
     viewerFacade.dispose();
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 1024) {
+      document.body.classList.remove("sidebar-open");
+    }
   });
 };
 

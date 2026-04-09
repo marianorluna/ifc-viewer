@@ -31,7 +31,8 @@ describe("Navigation use-cases", () => {
       },
       showAll: async () => {
         calls.push("showAll");
-      }
+      },
+      setTheme: () => {}
     };
 
     await new BuildNavigationDataUseCase(viewer).execute();

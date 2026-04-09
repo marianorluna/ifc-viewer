@@ -7,15 +7,15 @@
   </head>
   <body>
     <div id="app-grid">
-      <bim-toolbars-container style="grid-area: header">
-        <bim-toolbar label="Viewer" active>
-          <bim-toolbar-section label="Acciones">
-            <bim-button id="btn-load" label="Cargar IFC"></bim-button>
-            <bim-button id="btn-clear-selection" label="Limpiar selección"></bim-button>
-            <bim-button id="btn-show-all" label="Mostrar todo"></bim-button>
-          </bim-toolbar-section>
-        </bim-toolbar>
-      </bim-toolbars-container>
+      <header id="topbar" style="grid-area: header">
+        <div id="topbar-actions">
+          <button id="btn-sidebar-toggle" class="topbar-button" aria-label="Abrir/cerrar panel">☰</button>
+          <button id="btn-load" class="topbar-button">Cargar IFC</button>
+          <button id="btn-clear-selection" class="topbar-button">Limpiar selección</button>
+          <button id="btn-show-all" class="topbar-button">Mostrar todo</button>
+          <button id="btn-toggle-theme" class="topbar-button">Tema: claro</button>
+        </div>
+      </header>
 
       <div id="sidebar" style="grid-area: sidebar; padding: 8px">
         <bim-panel label="Navegación BIM" active>

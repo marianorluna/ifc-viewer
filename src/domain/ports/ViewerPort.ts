@@ -1,5 +1,6 @@
 import type { SelectionMap } from "../entities/Selection";
 import type { ClassificationGroup, SpatialTreeNode } from "../entities/Classification";
+import type { ThemeMode } from "../entities/Theme";
 
 export interface ViewerPort {
   init(container: HTMLElement): Promise<void>;
@@ -14,4 +15,5 @@ export interface ViewerPort {
   isolateClassificationGroup(classification: "storeys" | "categories", groupKey: string): Promise<void>;
   hideClassificationGroup(classification: "storeys" | "categories", groupKey: string): Promise<void>;
   showAll(): Promise<void>;
+  setTheme(mode: ThemeMode): void;
 }

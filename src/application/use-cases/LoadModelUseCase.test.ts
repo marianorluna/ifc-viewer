@@ -21,7 +21,8 @@ describe("LoadModelUseCase", () => {
       getCategoryGroups: async () => [],
       isolateClassificationGroup: async () => {},
       hideClassificationGroup: async () => {},
-      showAll: async () => {}
+      showAll: async () => {},
+      setTheme: () => {}
     };
 
     const useCase = new LoadModelUseCase(viewer);

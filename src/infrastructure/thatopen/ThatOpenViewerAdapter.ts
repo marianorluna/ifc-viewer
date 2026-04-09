@@ -3,6 +3,7 @@ import * as OBC from "@thatopen/components";
 import * as OBF from "@thatopen/components-front";
 import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
+import type { ThemeMode } from "../../domain/entities/Theme";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 
 export class ThatOpenViewerAdapter implements ViewerPort {
@@ -11,6 +12,7 @@ export class ThatOpenViewerAdapter implements ViewerPort {
 
   private readonly components = new OBC.Components();
   private world?: OBC.SimpleWorld<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>;
+  private grid?: OBC.SimpleGrid;
   private highlighter?: OBF.Highlighter;
   private selectionCallback?: (selection: SelectionMap) => Promise<void> | void;
   private isIfcLoaderReady = false;
@@ -28,9 +30,8 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     await world.camera.controls.setLookAt(12, 8, 12, 0, 0, 0);
 
     const grid = this.components.get(OBC.Grids).create(world);
-    if (grid.material.uniforms.uColor) {
-      grid.material.uniforms.uColor.value = new THREE.Color("#3a3a3a");
-    }
+    this.grid = grid;
+    this.setTheme("light");
 
     const fragments = this.components.get(OBC.FragmentsManager);
     const workerUrl = "https://thatopen.github.io/engine_fragment/resources/worker.mjs";
@@ -167,6 +168,29 @@ export class ThatOpenViewerAdapter implements ViewerPort {
   async showAll(): Promise<void> {
     const hider = this.components.get(OBC.Hider);
     await hider.set(true);
+  }
+
+  setTheme(mode: ThemeMode): void {
+    const world = this.world;
+    if (!world) {
+      return;
+    }
+
+    const palette =
+      mode === "light"
+        ? {
+            sceneBg: "#f6f7f8",
+            gridColor: "#c8ced6"
+          }
+        : {
+            sceneBg: "#0f172a",
+            gridColor: "#3a3a3a"
+          };
+
+    world.scene.three.background = new THREE.Color(palette.sceneBg);
+    if (this.grid?.material.uniforms.uColor) {
+      this.grid.material.uniforms.uColor.value = new THREE.Color(palette.gridColor);
+    }
   }
 
   private getClassificationName(classification: ClassificationKey): string {

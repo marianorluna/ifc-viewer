@@ -1,5 +1,6 @@
 import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
+import type { ThemeMode } from "../../domain/entities/Theme";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 import { BuildNavigationDataUseCase } from "../use-cases/BuildNavigationDataUseCase";
 import { ClearSelectionUseCase } from "../use-cases/ClearSelectionUseCase";
@@ -10,6 +11,7 @@ import { HideClassificationGroupUseCase } from "../use-cases/HideClassificationG
 import { IsolateClassificationGroupUseCase } from "../use-cases/IsolateClassificationGroupUseCase";
 import { LoadModelUseCase } from "../use-cases/LoadModelUseCase";
 import { ShowAllUseCase } from "../use-cases/ShowAllUseCase";
+import { SetThemeUseCase } from "../use-cases/SetThemeUseCase";
 
 export class ViewerFacade {
   private readonly loadModelUseCase: LoadModelUseCase;
@@ -21,6 +23,7 @@ export class ViewerFacade {
   private readonly isolateClassificationGroupUseCase: IsolateClassificationGroupUseCase;
   private readonly hideClassificationGroupUseCase: HideClassificationGroupUseCase;
   private readonly showAllUseCase: ShowAllUseCase;
+  private readonly setThemeUseCase: SetThemeUseCase;
 
   constructor(private readonly viewer: ViewerPort) {
     this.loadModelUseCase = new LoadModelUseCase(viewer);
@@ -32,6 +35,7 @@ export class ViewerFacade {
     this.isolateClassificationGroupUseCase = new IsolateClassificationGroupUseCase(viewer);
     this.hideClassificationGroupUseCase = new HideClassificationGroupUseCase(viewer);
     this.showAllUseCase = new ShowAllUseCase(viewer);
+    this.setThemeUseCase = new SetThemeUseCase(viewer);
   }
 
   async init(container: HTMLElement): Promise<void> {
@@ -65,6 +69,10 @@ export class ViewerFacade {
 
   async showAll(): Promise<void> {
     await this.showAllUseCase.execute();
+  }
+
+  setTheme(mode: ThemeMode): void {
+    this.setThemeUseCase.execute(mode);
   }
 
   onSelectionChange(

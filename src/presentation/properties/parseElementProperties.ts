@@ -108,6 +108,26 @@ const KEY_SORT_ORDER = (k: string): number => {
     return 3;
   }
 
+  if (k.startsWith("Medida: alto")) {
+    return 4;
+  }
+
+  if (k.startsWith("Medida: largo")) {
+    return 5;
+  }
+
+  if (k.startsWith("Medida: ancho")) {
+    return 6;
+  }
+
+  if (k.startsWith("Medida: volumen")) {
+    return 7;
+  }
+
+  if (k === "Material (IFC)") {
+    return 8;
+  }
+
   return 100;
 };
 

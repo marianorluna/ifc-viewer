@@ -1,4 +1,3 @@
-import { Manager } from "@thatopen/ui";
 import { ViewerFacade } from "./application/services/ViewerFacade";
 import type { ThemeMode } from "./domain/entities/Theme";
 import { ThatOpenViewerAdapter } from "./infrastructure/thatopen/ThatOpenViewerAdapter";
@@ -12,11 +11,6 @@ import {
 import type { SelectionMap } from "./domain/entities/Selection";
 import "./style.css";
 
-type BimGridElement = HTMLElement & {
-  layouts?: Record<string, { template: string }>;
-  layout?: string;
-};
-
 const getRequiredElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
   if (!element) {
@@ -26,8 +20,25 @@ const getRequiredElement = <T extends HTMLElement>(id: string): T => {
   return element as T;
 };
 
-const setupLayout = (): void => {
-  getRequiredElement<BimGridElement>("app-grid");
+const initCollapsibleSections = (): void => {
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".sidebar-section-btn");
+  for (const btn of buttons) {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("aria-controls");
+      if (!targetId) {
+        return;
+      }
+
+      const body = document.getElementById(targetId);
+      if (!body) {
+        return;
+      }
+
+      const isExpanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!isExpanded));
+      body.hidden = isExpanded;
+    });
+  }
 };
 
 const renderGroupNode = (
@@ -125,8 +136,7 @@ const loadNavigationTrees = async (
 };
 
 const app = async (): Promise<void> => {
-  Manager.init();
-  setupLayout();
+  initCollapsibleSections();
 
   const viewerContainer = getRequiredElement<HTMLDivElement>("viewer-container");
   const ifcInput = getRequiredElement<HTMLInputElement>("ifc-input");

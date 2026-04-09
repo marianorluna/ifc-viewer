@@ -5,6 +5,12 @@ import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "..
 import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ThemeMode } from "../../domain/entities/Theme";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
+import {
+  bboxSizeAndVolume,
+  IFC_ITEM_RELATIONS_CONFIG,
+  mergeMeasurementMaterialOverlay,
+  unionBoxes
+} from "./ifcItemEnrichment";
 
 export class ThatOpenViewerAdapter implements ViewerPort {
   private static readonly STOREYS_CLASSIFICATION = "NavigationStoreys";
@@ -119,13 +125,18 @@ export class ThatOpenViewerAdapter implements ViewerPort {
       return null;
     }
 
-    const items = await model.getItemsData([firstLocalId]);
+    const items = await model.getItemsData([firstLocalId], IFC_ITEM_RELATIONS_CONFIG);
     const firstItem = items[0];
     if (!firstItem) {
       return null;
     }
 
-    return firstItem as Record<string, unknown>;
+    const rawItem = firstItem as Record<string, unknown>;
+    const boxes = await model.getBoxes([firstLocalId]);
+    const mergedBox = unionBoxes(boxes);
+    const dims = mergedBox ? bboxSizeAndVolume(mergedBox) : null;
+
+    return mergeMeasurementMaterialOverlay(rawItem, dims);
   }
 
   async buildNavigationData(): Promise<void> {

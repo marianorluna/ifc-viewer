@@ -18,35 +18,67 @@
       </header>
 
       <div id="sidebar" style="grid-area: sidebar; padding: 8px">
-        <bim-panel label="Navegación BIM" active>
-          <bim-panel-section label="Árbol espacial (storeys)">
-            <div id="storey-tree"></div>
-          </bim-panel-section>
-          <bim-panel-section label="Clasificación por categoría">
-            <div id="category-tree"></div>
-          </bim-panel-section>
-        </bim-panel>
-        <bim-panel label="Propiedades" active>
-          <bim-panel-section label="Elemento seleccionado">
-            <div class="properties-section">
-              <div class="properties-toolbar">
-                <button
-                  type="button"
-                  id="btn-toggle-properties-view"
-                  class="properties-toggle"
-                  aria-pressed="false"
-                  disabled
-                >
-                  Ver JSON
-                </button>
-              </div>
-              <div id="properties-body" class="properties-body">
-                <div id="properties-formatted" class="properties-formatted" role="region" aria-label="Propiedades del elemento"></div>
-                <pre id="properties-json" class="properties-json" hidden></pre>
+
+        <div class="sidebar-panel">
+          <div class="sidebar-panel-title">Navegación BIM</div>
+
+          <div class="sidebar-section">
+            <button type="button" class="sidebar-section-btn" aria-expanded="false" aria-controls="storey-section-body">
+              <span>Árbol espacial (storeys)</span>
+              <svg class="sidebar-section-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+              </svg>
+            </button>
+            <div id="storey-section-body" class="sidebar-section-body" hidden>
+              <div id="storey-tree"></div>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <button type="button" class="sidebar-section-btn" aria-expanded="false" aria-controls="category-section-body">
+              <span>Clasificación por categoría</span>
+              <svg class="sidebar-section-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+              </svg>
+            </button>
+            <div id="category-section-body" class="sidebar-section-body" hidden>
+              <div id="category-tree"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-panel">
+          <div class="sidebar-panel-title">Propiedades</div>
+
+          <div class="sidebar-section">
+            <button type="button" class="sidebar-section-btn" aria-expanded="false" aria-controls="properties-section-body">
+              <span>Elemento seleccionado</span>
+              <svg class="sidebar-section-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+              </svg>
+            </button>
+            <div id="properties-section-body" class="sidebar-section-body" hidden>
+              <div class="properties-section">
+                <div class="properties-toolbar">
+                  <button
+                    type="button"
+                    id="btn-toggle-properties-view"
+                    class="properties-toggle"
+                    aria-pressed="false"
+                    disabled
+                  >
+                    Ver JSON
+                  </button>
+                </div>
+                <div id="properties-body" class="properties-body">
+                  <div id="properties-formatted" class="properties-formatted" role="region" aria-label="Propiedades del elemento"></div>
+                  <pre id="properties-json" class="properties-json" hidden></pre>
+                </div>
               </div>
             </div>
-          </bim-panel-section>
-        </bim-panel>
+          </div>
+        </div>
+
       </div>
 
       <div id="sidebar-resizer" style="grid-area: resizer" aria-hidden="true"></div>

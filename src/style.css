@@ -1,17 +1,29 @@
 :root {
   --sidebar-width: 25vw;
-  --page-bg: #f5f6f8;
+  --page-bg: #f4f7fb;
   --text-color: #1f2937;
   --panel-bg: #ffffff;
-  --panel-border: #d7dce4;
-  --tree-bg: #f3f5f7;
-  --tree-border: #d7dce4;
+  --panel-border: #dbe3ef;
+  --tree-bg: #f8fbff;
+  --tree-border: #dbe3ef;
   --tree-text: #1f2937;
   --tree-button-bg: #ffffff;
   --tree-button-text: #1f2937;
-  --tree-button-border: #c8d0db;
+  --tree-button-border: #cfd8e6;
   --code-bg: #f8fafc;
   --code-text: #0f172a;
+  --bim-ui_main-base: #2563eb;
+  --bim-ui_main-contrast: #ffffff;
+  --bim-ui_accent-base: #3b82f6;
+  --bim-ui_accent-contrast: #ffffff;
+  --bim-ui_bg-base: #ffffff;
+  --bim-ui_bg-contrast-20: #f2f6fb;
+  --bim-ui_bg-contrast-40: #dbe3ef;
+  --bim-ui_bg-contrast-60: #c5d2e6;
+  --bim-ui_bg-contrast-80: #5b6b84;
+  --bim-ui_bg-contrast-100: #0f172a;
+  --bim-panel--c: #0f172a;
+  --bim-label--c: #0f172a;
 }
 
 body[data-theme="dark"] {
@@ -27,11 +39,15 @@ body[data-theme="dark"] {
   --tree-button-border: #4b5563;
   --code-bg: #0b1220;
   --code-text: #d9f7be;
-  --bim-ui_bg-base: #111827;
+  --bim-ui_main-base: #3b82f6;
+  --bim-ui_main-contrast: #ffffff;
+  --bim-ui_accent-base: #60a5fa;
+  --bim-ui_accent-contrast: #0f172a;
+  --bim-ui_bg-base: #0f172a;
   --bim-ui_bg-contrast-20: #1f2937;
   --bim-ui_bg-contrast-40: #334155;
-  --bim-ui_bg-contrast-60: #4b5563;
-  --bim-ui_bg-contrast-80: #cbd5e1;
+  --bim-ui_bg-contrast-60: #4b5f7a;
+  --bim-ui_bg-contrast-80: #dbe5f5;
   --bim-ui_bg-contrast-100: #f8fafc;
   --bim-panel--c: #f8fafc;
   --bim-label--c: #f8fafc;
@@ -61,7 +77,8 @@ body {
 
 #sidebar {
   min-width: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--panel-bg);
   border-right: 1px solid var(--panel-border);
 }
@@ -186,6 +203,14 @@ bim-panel,
 bim-toolbar {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
+}
+
+bim-panel {
+  height: auto;
+}
+
+bim-panel-section {
+  height: auto;
 }
 
 @media (max-width: 1024px) {

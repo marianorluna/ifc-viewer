@@ -9,6 +9,7 @@ import type { ViewerPort } from "../../domain/ports/ViewerPort";
 export class ThatOpenViewerAdapter implements ViewerPort {
   private static readonly STOREYS_CLASSIFICATION = "NavigationStoreys";
   private static readonly CATEGORIES_CLASSIFICATION = "NavigationCategories";
+  private static readonly WEB_IFC_VERSION = "0.0.77";
 
   private readonly components = new OBC.Components();
   private world?: OBC.SimpleWorld<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>;
@@ -90,7 +91,10 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     if (!this.isIfcLoaderReady) {
       await ifcLoader.setup({
         autoSetWasm: false,
-        wasm: { path: "https://unpkg.com/web-ifc@0.0.74/", absolute: true }
+        wasm: {
+          path: `https://unpkg.com/web-ifc@${ThatOpenViewerAdapter.WEB_IFC_VERSION}/`,
+          absolute: true
+        }
       });
       this.isIfcLoaderReady = true;
     }

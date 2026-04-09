@@ -1,0 +1,26 @@
+{
+  "name": "test-3d-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@thatopen/components": "latest",
+    "@thatopen/components-front": "latest",
+    "@thatopen/ui": "latest",
+    "three": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/three": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}

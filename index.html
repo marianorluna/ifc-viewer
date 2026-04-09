@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>That Open Viewer - Fase 1</title>
+  </head>
+  <body>
+    <bim-grid id="app-grid">
+      <bim-toolbars-container style="grid-area: header">
+        <bim-toolbar label="Viewer" active>
+          <bim-toolbar-section label="Acciones">
+            <bim-button id="btn-load" label="Cargar IFC"></bim-button>
+            <bim-button id="btn-clear-selection" label="Limpiar selección"></bim-button>
+          </bim-toolbar-section>
+        </bim-toolbar>
+      </bim-toolbars-container>
+
+      <div id="sidebar" style="grid-area: sidebar; padding: 8px">
+        <bim-panel label="Propiedades" active>
+          <bim-panel-section label="Elemento seleccionado">
+            <pre id="properties-content">Sin selección</pre>
+          </bim-panel-section>
+        </bim-panel>
+      </div>
+
+      <div id="viewer-container" style="grid-area: content; min-height: 80vh"></div>
+    </bim-grid>
+
+    <input id="ifc-input" type="file" accept=".ifc" style="display: none" />
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

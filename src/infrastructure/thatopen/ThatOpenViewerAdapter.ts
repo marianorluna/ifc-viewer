@@ -120,6 +120,24 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     await ifcLoader.load(buffer, false, modelId);
   }
 
+  async disposeModelIfPresent(modelId: string): Promise<void> {
+    this.ifcSourceByModelId.delete(modelId);
+    this.projectUnitsByModelId.delete(modelId);
+
+    try {
+      const fragments = this.components.get(OBC.FragmentsManager);
+      if (fragments.list.has(modelId)) {
+        await fragments.core.disposeModel(modelId);
+      }
+    } finally {
+      if (this.highlighter) {
+        await this.highlighter.clear();
+      }
+      const hider = this.components.get(OBC.Hider);
+      await hider.set(true);
+    }
+  }
+
   private getWebIfcWasmConfig(): { path: string; absolute: boolean } {
     return {
       path: `https://unpkg.com/web-ifc@${ThatOpenViewerAdapter.WEB_IFC_VERSION}/`,

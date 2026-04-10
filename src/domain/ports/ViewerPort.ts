@@ -9,6 +9,7 @@ export interface ViewerPort {
   dispose(): void;
   clearSelection(): Promise<void>;
   loadIfcBuffer(buffer: Uint8Array, modelId: string): Promise<void>;
+  disposeModelIfPresent(modelId: string): Promise<void>;
   onSelectionChange(callback: (selection: SelectionMap) => Promise<void> | void): void;
   getFirstSelectedProperties(selection: SelectionMap): Promise<Record<string, unknown> | null>;
   buildNavigationData(): Promise<void>;

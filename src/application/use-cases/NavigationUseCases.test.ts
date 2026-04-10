@@ -16,6 +16,7 @@ describe("Navigation use-cases", () => {
       dispose: () => {},
       clearSelection: async () => {},
       loadIfcBuffer: async () => {},
+      disposeModelIfPresent: async () => {},
       onSelectionChange: () => {},
       getFirstSelectedProperties: async () => null,
       buildNavigationData: async () => {

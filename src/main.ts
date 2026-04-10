@@ -1,4 +1,9 @@
 import { ViewerFacade } from "./application/services/ViewerFacade";
+import {
+  IFC_ABSOLUTE_MAX_BYTES,
+  IFC_RECOMMENDED_MAX_BYTES
+} from "./domain/constants/ifcLoadLimits";
+import { IfcFileExceedsAbsoluteLimitError } from "./domain/errors/IfcLoadErrors";
 import type { ThemeMode } from "./domain/entities/Theme";
 import { ThatOpenViewerAdapter } from "./infrastructure/thatopen/ThatOpenViewerAdapter";
 import { parseElementProperties } from "./presentation/properties/parseElementProperties";
@@ -9,6 +14,7 @@ import {
   setJsonPropertiesView
 } from "./presentation/properties/renderPropertiesView";
 import type { SelectionMap } from "./domain/entities/Selection";
+import { confirmLoadLargeIfc, showIfcAlert } from "./presentation/ifcLoadDialogs";
 
 const getRequiredElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
@@ -153,6 +159,8 @@ const app = async (): Promise<void> => {
   const propertiesViewToggle = getRequiredElement<HTMLButtonElement>("btn-toggle-properties-view");
   const storeyRoot = getRequiredElement<HTMLElement>("storey-tree");
   const categoryRoot = getRequiredElement<HTMLElement>("category-tree");
+  const ifcModelLoader = getRequiredElement<HTMLDivElement>("ifc-model-loader");
+  const ifcModelLoaderFilename = getRequiredElement<HTMLElement>("ifc-model-loader-filename");
   const viewerNav = getRequiredElement<HTMLElement>("viewer-nav");
   const viewerNavToggle = getRequiredElement<HTMLButtonElement>("btn-viewer-nav-toggle");
   const navFitBtn = getRequiredElement<HTMLButtonElement>("btn-nav-fit");
@@ -166,6 +174,18 @@ const app = async (): Promise<void> => {
 
   const VIEWER_NAV_COLLAPSED_KEY = "arqfi_viewer_nav_collapsed";
   const VIEWER_TOOLBAR_COLLAPSED_KEY = "arqfi_viewer_toolbar_collapsed";
+
+  const setIfcModelLoading = (active: boolean, fileName?: string): void => {
+    if (active) {
+      ifcModelLoaderFilename.textContent = fileName ?? "";
+      ifcModelLoader.hidden = false;
+      ifcModelLoader.setAttribute("aria-busy", "true");
+    } else {
+      ifcModelLoader.hidden = true;
+      ifcModelLoader.removeAttribute("aria-busy");
+      ifcModelLoaderFilename.textContent = "";
+    }
+  };
 
   const applyViewerNavCollapsed = (collapsed: boolean): void => {
     viewerNav.classList.toggle("viewer-nav--collapsed", collapsed);
@@ -401,14 +421,54 @@ const app = async (): Promise<void> => {
       return;
     }
 
+    if (file.size > IFC_ABSOLUTE_MAX_BYTES) {
+      await showIfcAlert(
+        document,
+        "No se puede cargar el archivo",
+        new IfcFileExceedsAbsoluteLimitError(IFC_ABSOLUTE_MAX_BYTES).userMessage()
+      );
+      ifcInput.value = "";
+      return;
+    }
+
+    if (file.size > IFC_RECOMMENDED_MAX_BYTES) {
+      const proceed = await confirmLoadLargeIfc(document, file);
+      if (!proceed) {
+        ifcInput.value = "";
+        return;
+      }
+    }
+
     renderPropertiesPlaceholder(propertiesFormatted, "Cargando modelo…");
     setJsonPropertiesView(propertiesJson, null);
     lastPropertiesPayload = null;
     applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
-    await viewerFacade.loadIfc(file);
-    await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
-    renderPropertiesPlaceholder(propertiesFormatted, "Modelo cargado. Selecciona un elemento.");
-    ifcInput.value = "";
+
+    setIfcModelLoading(true, file.name);
+
+    try {
+      await viewerFacade.loadIfc(file);
+      await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
+      renderPropertiesPlaceholder(propertiesFormatted, "Modelo cargado. Selecciona un elemento.");
+    } catch (error) {
+      const message =
+        error instanceof IfcFileExceedsAbsoluteLimitError
+          ? error.userMessage()
+          : error instanceof Error && error.message.length > 0
+            ? `No se pudo completar la carga: ${error.message}`
+            : "No se pudo cargar el IFC. El archivo puede ser demasiado pesado para tu navegador o estar dañado.";
+
+      await showIfcAlert(document, "Error al cargar el modelo", message);
+      renderPropertiesPlaceholder(propertiesFormatted, "No se pudo cargar el modelo.");
+      setJsonPropertiesView(propertiesJson, null);
+      lastPropertiesPayload = null;
+      applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
+      await viewerFacade.clearSelection();
+      await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
+    } finally {
+      setIfcModelLoading(false);
+      ifcInput.value = "";
+    }
   });
 
   window.addEventListener("beforeunload", () => {

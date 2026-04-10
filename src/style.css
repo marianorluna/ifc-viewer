@@ -1000,3 +1000,159 @@ body[data-theme="dark"] #icon-theme-dark {
     height: 13px;
   }
 }
+
+/* Loader de carga de modelo IFC */
+.ifc-model-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(15 23 42 / 35%);
+  backdrop-filter: blur(4px);
+  pointer-events: all;
+}
+
+.ifc-model-loader[hidden] {
+  display: none !important;
+}
+
+.ifc-model-loader__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 360px;
+  padding: 28px 32px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--text-color);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 20%);
+}
+
+.ifc-model-loader__spinner {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  border: 3px solid var(--bim-ui_bg-contrast-40);
+  border-top-color: var(--bim-ui_main-base);
+  animation: ifc-model-loader-spin 0.85s linear infinite;
+}
+
+@keyframes ifc-model-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ifc-model-loader__title {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ifc-model-loader__filename {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  word-break: break-all;
+  color: var(--bim-ui_bg-contrast-80);
+}
+
+.ifc-model-loader__hint {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--bim-ui_bg-contrast-80);
+}
+
+/* Diálogos de validación / error al cargar IFC */
+.ifc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(15 23 42 / 45%);
+  backdrop-filter: blur(3px);
+}
+
+.ifc-modal-overlay[hidden] {
+  display: none !important;
+}
+
+.ifc-modal {
+  width: min(440px, 100%);
+  max-height: min(80vh, 420px);
+  overflow: auto;
+  padding: 20px 22px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--text-color);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 18%);
+}
+
+.ifc-modal__title {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ifc-modal__body {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.ifc-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ifc-modal__actions--single {
+  justify-content: stretch;
+}
+
+.ifc-modal__actions--single .ifc-modal__btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.ifc-modal__btn {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid var(--tree-button-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ifc-modal__btn--secondary {
+  background: var(--tree-button-bg);
+  color: var(--tree-button-text);
+}
+
+.ifc-modal__btn--primary {
+  background: var(--bim-ui_main-base);
+  color: var(--bim-ui_main-contrast);
+  border-color: var(--bim-ui_main-base);
+}
+
+.ifc-modal__btn:focus-visible {
+  outline: 2px solid var(--bim-ui_accent-base);
+  outline-offset: 2px;
+}

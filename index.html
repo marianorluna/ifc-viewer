@@ -237,7 +237,11 @@
         <!-- Barra de acciones flotante inferior (colapsable) -->
         <div id="viewer-toolbar" role="toolbar" aria-label="Acciones del visor">
           <div id="viewer-toolbar-body" class="viewer-toolbar-body">
-            <button id="btn-load" class="viewer-toolbar-btn" title="Cargar archivo IFC">
+            <button
+              id="btn-load"
+              class="viewer-toolbar-btn"
+              title="Cargar archivo IFC (recomendado hasta 100 MB; por encima se mostrará una confirmación)"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="17 8 12 3 7 8"/>
@@ -285,6 +289,60 @@
     </div>
 
     <input id="ifc-input" type="file" accept=".ifc" style="display: none" />
+
+    <div
+      id="ifc-model-loader"
+      class="ifc-model-loader"
+      hidden
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div class="ifc-model-loader__panel">
+        <div class="ifc-model-loader__spinner" aria-hidden="true"></div>
+        <p class="ifc-model-loader__title">Cargando modelo IFC</p>
+        <p id="ifc-model-loader-filename" class="ifc-model-loader__filename"></p>
+        <p class="ifc-model-loader__hint">Esto puede tardar unos minutos si el archivo es grande.</p>
+      </div>
+    </div>
+
+    <div id="ifc-oversized-dialog" class="ifc-modal-overlay" hidden>
+      <div
+        class="ifc-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ifc-oversized-dialog-title"
+      >
+        <h2 id="ifc-oversized-dialog-title" class="ifc-modal__title">Archivo IFC grande</h2>
+        <p id="ifc-oversized-dialog-message" class="ifc-modal__body"></p>
+        <div class="ifc-modal__actions">
+          <button type="button" id="ifc-oversized-dialog-cancel" class="ifc-modal__btn ifc-modal__btn--secondary">
+            Cancelar
+          </button>
+          <button type="button" id="ifc-oversized-dialog-confirm" class="ifc-modal__btn ifc-modal__btn--primary">
+            Continuar de todos modos
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ifc-alert-dialog" class="ifc-modal-overlay" hidden>
+      <div
+        class="ifc-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="ifc-alert-dialog-title"
+      >
+        <h2 id="ifc-alert-dialog-title" class="ifc-modal__title"></h2>
+        <p id="ifc-alert-dialog-message" class="ifc-modal__body"></p>
+        <div class="ifc-modal__actions ifc-modal__actions--single">
+          <button type="button" id="ifc-alert-dialog-ok" class="ifc-modal__btn ifc-modal__btn--primary">
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

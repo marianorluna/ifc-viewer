@@ -45,8 +45,16 @@ export class ViewerFacade {
   }
 
   async loadIfc(file: File): Promise<void> {
-    await this.loadModelUseCase.execute(file);
-    await this.buildNavigationDataUseCase.execute();
+    let modelId: string | undefined;
+    try {
+      modelId = await this.loadModelUseCase.execute(file);
+      await this.buildNavigationDataUseCase.execute();
+    } catch (error) {
+      if (modelId !== undefined) {
+        await this.viewer.disposeModelIfPresent(modelId);
+      }
+      throw error;
+    }
   }
 
   async clearSelection(): Promise<void> {

@@ -58,6 +58,12 @@ export class ViewerFacade {
     }
   }
 
+  /** Descarta todos los IFC cargados y reconstruye datos de navegación (árbol vacío si no queda ningún modelo). */
+  async unloadAllIfc(): Promise<void> {
+    await this.viewer.disposeAllIfcModels();
+    await this.buildNavigationDataUseCase.execute();
+  }
+
   async clearSelection(): Promise<void> {
     await this.clearSelectionUseCase.execute();
   }
@@ -108,6 +114,10 @@ export class ViewerFacade {
 
   setVisualizationStyle(style: VisualizationStyle): void {
     this.viewer.setVisualizationStyle(style);
+  }
+
+  hasIfcModels(): boolean {
+    return this.viewer.hasIfcModels();
   }
 
   onSelectionChange(

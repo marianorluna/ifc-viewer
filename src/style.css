@@ -219,14 +219,16 @@ body[data-theme="dark"] #icon-theme-dark {
   background: var(--panel-bg);
 }
 
+/* Título principal del panel lateral: debe dominar sobre los títulos de tarjeta (.sidebar-panel-title). */
 .sidebar-chrome-title {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 1.125rem;
+  line-height: 1.25;
   color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .sidebar-collapse-btn {
@@ -735,6 +737,10 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
   white-space: nowrap;
 }
 
+.viewer-toolbar-btn__label {
+  display: inline;
+}
+
 .viewer-toolbar-btn svg {
   width: 15px;
   height: 15px;
@@ -749,6 +755,17 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
 
 .viewer-toolbar-btn:active {
   background: rgb(59 130 246 / 22%);
+}
+
+.viewer-toolbar-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.viewer-toolbar-btn:disabled:hover {
+  background: transparent;
+  border-color: transparent;
 }
 
 .viewer-toolbar-sep {
@@ -943,14 +960,16 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
   overflow: hidden;
 }
 
+/* Encabezados de bloque: un nivel por debajo del título del chrome (Navegación BIM). */
 .sidebar-panel-title {
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.35;
   color: var(--text-color);
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--panel-border);
   background: var(--panel-bg);
-  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .sidebar-section {
@@ -1021,6 +1040,7 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
     height: 100%;
   }
 
+  /* Por encima del botón flotante de abrir panel (z-index 25) y del panel de vistas (25). */
   #sidebar {
     position: fixed;
     top: var(--topbar-height);
@@ -1028,7 +1048,7 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
     bottom: 0;
     width: min(88vw, 380px);
     max-width: 380px;
-    z-index: 20;
+    z-index: 50;
     transform: translateX(-102%);
     transition: transform 0.2s ease;
     border-right: 1px solid var(--panel-border);
@@ -1042,9 +1062,23 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
   body.sidebar-open #sidebar {
     transform: translateX(0);
   }
+
+  /* Con el panel abierto no debe quedar usable el botón flotante debajo (evita superposición). */
+  body.sidebar-open .sidebar-expand-btn {
+    pointer-events: none;
+    visibility: hidden;
+  }
 }
 
 @media (max-width: 640px) {
+  /* Panel lateral a pantalla completa (debajo de la topbar); el z-index viene del bloque ≤1024px. */
+  #sidebar {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+  }
+
   .sidebar-scroll {
     padding: 6px !important;
   }
@@ -1073,15 +1107,38 @@ body[data-theme="dark"] .viewer-style-flyout-btn.viewer-nav-btn--active {
     gap: 2px;
   }
 
+  /* Iconos solos: evita desbordes; texto solo para lectores de pantalla (patrón sr-only) */
   .viewer-toolbar-btn {
+    position: relative;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px 12px;
+    gap: 0;
     font-size: 12px;
-    padding: 5px 8px;
-    gap: 4px;
+  }
+
+  .viewer-toolbar-btn__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   .viewer-toolbar-btn svg {
-    width: 13px;
-    height: 13px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .viewer-toolbar-sep {
+    height: 24px;
+    align-self: center;
   }
 }
 

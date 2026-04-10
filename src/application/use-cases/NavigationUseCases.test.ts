@@ -17,6 +17,7 @@ describe("Navigation use-cases", () => {
       clearSelection: async () => {},
       loadIfcBuffer: async () => {},
       disposeModelIfPresent: async () => {},
+      disposeAllIfcModels: async () => {},
       onSelectionChange: () => {},
       getFirstSelectedProperties: async () => null,
       buildNavigationData: async () => {
@@ -39,7 +40,8 @@ describe("Navigation use-cases", () => {
       setGridVisible: () => {},
       toggleCameraProjection: async () => {},
       getCameraProjection: () => "Perspective",
-      setVisualizationStyle: () => {}
+      setVisualizationStyle: () => {},
+      hasIfcModels: () => false
     };
 
     await new BuildNavigationDataUseCase(viewer).execute();

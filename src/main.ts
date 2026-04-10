@@ -15,7 +15,11 @@ import {
   setJsonPropertiesView
 } from "./presentation/properties/renderPropertiesView";
 import type { SelectionMap } from "./domain/entities/Selection";
-import { confirmLoadLargeIfc, showIfcAlert } from "./presentation/ifcLoadDialogs";
+import {
+  confirmClearLoadedIfc,
+  confirmLoadLargeIfc,
+  showIfcAlert
+} from "./presentation/ifcLoadDialogs";
 
 const getRequiredElement = <T extends HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
@@ -148,6 +152,7 @@ const app = async (): Promise<void> => {
   const ifcInput = getRequiredElement<HTMLInputElement>("ifc-input");
   const viewerToolbar = getRequiredElement<HTMLDivElement>("viewer-toolbar");
   const toolbarToggleBtn = getRequiredElement<HTMLButtonElement>("btn-toolbar-toggle");
+  const clearModelsButton = getRequiredElement<HTMLButtonElement>("btn-clear-models");
   const loadButton = getRequiredElement<HTMLButtonElement>("btn-load");
   const clearSelectionButton = getRequiredElement<HTMLButtonElement>("btn-clear-selection");
   const showAllButton = getRequiredElement<HTMLButtonElement>("btn-show-all");
@@ -221,12 +226,13 @@ const app = async (): Promise<void> => {
     }
   };
 
-  const viewerFacade = new ViewerFacade(new ThatOpenViewerAdapter());
+  let viewerFacade = new ViewerFacade(new ThatOpenViewerAdapter());
   await viewerFacade.init(viewerContainer);
   let currentTheme: ThemeMode = "light";
   document.body.dataset.theme = currentTheme;
   viewerFacade.setTheme(currentTheme);
 
+  let visualizationStyle: VisualizationStyle = "original";
   let gridVisible = true;
   const syncGridToggleUi = (): void => {
     gridToggleBtn.setAttribute("aria-pressed", String(gridVisible));
@@ -249,6 +255,14 @@ const app = async (): Promise<void> => {
     );
   };
   syncProjectionToggleUi();
+
+  const syncModelDependentToolbar = (): void => {
+    const hasModel = viewerFacade.hasIfcModels();
+    clearModelsButton.disabled = !hasModel;
+    clearSelectionButton.disabled = !hasModel;
+    showAllButton.disabled = !hasModel;
+  };
+  syncModelDependentToolbar();
 
   let propertiesViewMode: "formatted" | "json" = "formatted";
   let lastPropertiesPayload: Record<string, unknown> | null = null;
@@ -478,11 +492,53 @@ const app = async (): Promise<void> => {
 
   for (const [btn, style] of allStyleBtns) {
     btn.addEventListener("click", () => {
+      visualizationStyle = style;
       viewerFacade.setVisualizationStyle(style);
       syncStyleUi(style);
       closeStyleFlyout();
     });
   }
+
+  /** Equivalente a recargar la página: nuevo motor That Open, sin estado residual del clasificador ni del worker. */
+  const resetViewerLikeReload = async (): Promise<void> => {
+    viewerFacade.dispose();
+    viewerContainer.replaceChildren();
+    viewerFacade = new ViewerFacade(new ThatOpenViewerAdapter());
+    await viewerFacade.init(viewerContainer);
+    visualizationStyle = "original";
+    gridVisible = true;
+    viewerFacade.setTheme(currentTheme);
+    viewerFacade.setGridVisible(gridVisible);
+    viewerFacade.setVisualizationStyle(visualizationStyle);
+    viewerFacade.onSelectionChange(async (selection, properties) => {
+      refreshPropertiesPanel(selection, properties);
+    });
+    syncGridToggleUi();
+    syncProjectionToggleUi();
+    syncStyleUi(visualizationStyle);
+    syncModelDependentToolbar();
+  };
+
+  clearModelsButton.addEventListener("click", async () => {
+    const proceed = await confirmClearLoadedIfc(document);
+    if (!proceed) {
+      return;
+    }
+
+    clearModelsButton.disabled = true;
+    clearSelectionButton.disabled = true;
+    showAllButton.disabled = true;
+    try {
+      await resetViewerLikeReload();
+      setJsonPropertiesView(propertiesJson, null);
+      renderPropertiesPlaceholder(propertiesFormatted, "Sin selección");
+      lastPropertiesPayload = null;
+      applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
+      await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
+    } finally {
+      syncModelDependentToolbar();
+    }
+  });
 
   ifcInput.addEventListener("change", async () => {
     const file = ifcInput.files?.[0];
@@ -519,6 +575,7 @@ const app = async (): Promise<void> => {
       await viewerFacade.loadIfc(file);
       await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
       renderPropertiesPlaceholder(propertiesFormatted, "Modelo cargado. Selecciona un elemento.");
+      syncModelDependentToolbar();
     } catch (error) {
       const message =
         error instanceof IfcFileExceedsAbsoluteLimitError
@@ -534,6 +591,7 @@ const app = async (): Promise<void> => {
       applyPropertiesViewMode(propertiesViewMode, propertiesFormatted, propertiesJson, propertiesViewToggle, false);
       await viewerFacade.clearSelection();
       await loadNavigationTrees(viewerFacade, storeyRoot, categoryRoot);
+      syncModelDependentToolbar();
     } finally {
       setIfcModelLoading(false);
       ifcInput.value = "";

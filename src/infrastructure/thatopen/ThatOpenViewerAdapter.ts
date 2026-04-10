@@ -110,6 +110,11 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     this.components.dispose();
   }
 
+  hasIfcModels(): boolean {
+    const fragments = this.components.get(OBC.FragmentsManager);
+    return fragments.list.size > 0;
+  }
+
   onSelectionChange(callback: (selection: SelectionMap) => Promise<void> | void): void {
     this.selectionCallback = callback;
   }
@@ -159,6 +164,26 @@ export class ThatOpenViewerAdapter implements ViewerPort {
       const hider = this.components.get(OBC.Hider);
       await hider.set(true);
     }
+  }
+
+  async disposeAllIfcModels(): Promise<void> {
+    const fragments = this.components.get(OBC.FragmentsManager);
+    const modelIds = [...fragments.list.keys()];
+    for (const modelId of modelIds) {
+      this.ifcSourceByModelId.delete(modelId);
+      this.projectUnitsByModelId.delete(modelId);
+      if (fragments.list.has(modelId)) {
+        await fragments.core.disposeModel(modelId);
+      }
+    }
+
+    this.materialSnapshots.clear();
+
+    if (this.highlighter) {
+      await this.highlighter.clear();
+    }
+    const hider = this.components.get(OBC.Hider);
+    await hider.set(true);
   }
 
   private getWebIfcWasmConfig(): { path: string; absolute: boolean } {
@@ -379,6 +404,7 @@ export class ThatOpenViewerAdapter implements ViewerPort {
   }
 
   private async getGroups(classification: ClassificationKey): Promise<ClassificationGroup[]> {
+    const fragments = this.components.get(OBC.FragmentsManager);
     const classifier = this.components.get(OBC.Classifier);
     const classificationName = this.getClassificationName(classification);
     const groups = classifier.list.get(classificationName);
@@ -389,7 +415,15 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     const result: ClassificationGroup[] = [];
     for (const [groupName, groupData] of groups) {
       const modelIdMap = await groupData.get();
-      const itemCount = Object.values(modelIdMap).reduce((acc, ids) => acc + ids.size, 0);
+      let itemCount = 0;
+      for (const [modelId, ids] of Object.entries(modelIdMap)) {
+        if (fragments.list.has(modelId)) {
+          itemCount += ids.size;
+        }
+      }
+      if (itemCount === 0) {
+        continue;
+      }
       result.push({
         key: groupName,
         label: groupName,

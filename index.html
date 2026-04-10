@@ -307,6 +307,23 @@
         <div id="viewer-toolbar" role="toolbar" aria-label="Acciones del visor">
           <div id="viewer-toolbar-body" class="viewer-toolbar-body">
             <button
+              id="btn-clear-models"
+              class="viewer-toolbar-btn"
+              type="button"
+              disabled
+              title="Quitar todos los modelos IFC de la escena y vaciar la navegación BIM"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                <line x1="10" x2="10" y1="11" y2="17"/>
+                <line x1="14" x2="14" y1="11" y2="17"/>
+              </svg>
+              <span class="viewer-toolbar-btn__label">Limpiar</span>
+            </button>
+            <div class="viewer-toolbar-sep" aria-hidden="true"></div>
+            <button
               id="btn-load"
               class="viewer-toolbar-btn"
               title="Cargar archivo IFC (recomendado hasta 100 MB; por encima se mostrará una confirmación)"
@@ -316,24 +333,24 @@
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              Cargar IFC
+              <span class="viewer-toolbar-btn__label">Cargar IFC</span>
             </button>
             <div class="viewer-toolbar-sep" aria-hidden="true"></div>
-            <button id="btn-clear-selection" class="viewer-toolbar-btn" title="Deseleccionar selección actual">
+            <button id="btn-clear-selection" class="viewer-toolbar-btn" disabled title="Deseleccionar selección actual">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                 <path d="M10 11v6"/>
                 <path d="M14 11v6"/>
               </svg>
-              Deseleccionar
+              <span class="viewer-toolbar-btn__label">Deseleccionar</span>
             </button>
-            <button id="btn-show-all" class="viewer-toolbar-btn" title="Mostrar todos los elementos">
+            <button id="btn-show-all" class="viewer-toolbar-btn" disabled title="Mostrar todos los elementos">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
-              Mostrar todo
+              <span class="viewer-toolbar-btn__label">Mostrar todo</span>
             </button>
           </div>
           <div class="viewer-toolbar-sep viewer-toolbar-sep-for-toggle" aria-hidden="true"></div>
@@ -390,6 +407,29 @@
           </button>
           <button type="button" id="ifc-oversized-dialog-confirm" class="ifc-modal__btn ifc-modal__btn--primary">
             Continuar de todos modos
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ifc-clear-dialog" class="ifc-modal-overlay" hidden>
+      <div
+        class="ifc-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ifc-clear-dialog-title"
+        aria-describedby="ifc-clear-dialog-message"
+      >
+        <h2 id="ifc-clear-dialog-title" class="ifc-modal__title">Limpiar modelos IFC</h2>
+        <p id="ifc-clear-dialog-message" class="ifc-modal__body">
+          Se eliminarán todos los modelos IFC cargados de la escena y se reiniciará el visor. El árbol de navegación BIM y las propiedades del elemento seleccionado se vaciarán.
+        </p>
+        <div class="ifc-modal__actions">
+          <button type="button" id="ifc-clear-dialog-cancel" class="ifc-modal__btn ifc-modal__btn--secondary">
+            Cancelar
+          </button>
+          <button type="button" id="ifc-clear-dialog-confirm" class="ifc-modal__btn ifc-modal__btn--primary">
+            Aceptar
           </button>
         </div>
       </div>

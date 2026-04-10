@@ -22,6 +22,7 @@ const createViewerStub = (
     clearSelection: async () => {},
     loadIfcBuffer,
     disposeModelIfPresent,
+    disposeAllIfcModels: async () => {},
     onSelectionChange: () => {},
     getFirstSelectedProperties: async () => null,
     buildNavigationData: async () => {},
@@ -36,7 +37,8 @@ const createViewerStub = (
     setGridVisible: () => {},
     toggleCameraProjection: async () => {},
     getCameraProjection: () => "Perspective",
-    setVisualizationStyle: () => {}
+    setVisualizationStyle: () => {},
+    hasIfcModels: () => false
   };
 };
 

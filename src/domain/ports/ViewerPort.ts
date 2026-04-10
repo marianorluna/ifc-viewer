@@ -11,6 +11,7 @@ export interface ViewerPort {
   clearSelection(): Promise<void>;
   loadIfcBuffer(buffer: Uint8Array, modelId: string): Promise<void>;
   disposeModelIfPresent(modelId: string): Promise<void>;
+  disposeAllIfcModels(): Promise<void>;
   onSelectionChange(callback: (selection: SelectionMap) => Promise<void> | void): void;
   getFirstSelectedProperties(selection: SelectionMap): Promise<Record<string, unknown> | null>;
   buildNavigationData(): Promise<void>;
@@ -26,4 +27,6 @@ export interface ViewerPort {
   toggleCameraProjection(): Promise<void>;
   getCameraProjection(): CameraProjectionMode;
   setVisualizationStyle(style: VisualizationStyle): void;
+  /** `true` si hay al menos un modelo IFC cargado en la escena (fragmentos). */
+  hasIfcModels(): boolean;
 }

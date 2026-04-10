@@ -222,13 +222,14 @@ body[data-theme="dark"] #icon-theme-dark {
 /* Título principal del panel lateral: debe dominar sobre los títulos de tarjeta (.sidebar-panel-title). */
 .sidebar-chrome-title {
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1rem;
   line-height: 1.25;
   color: var(--text-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.02em;
+  padding-left: 0.5rem;
 }
 
 .sidebar-collapse-btn {

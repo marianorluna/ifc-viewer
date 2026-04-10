@@ -7,6 +7,7 @@ import type { ThemeMode } from "../../domain/entities/Theme";
 import type { CameraProjectionMode } from "../../domain/entities/CameraProjection";
 import type { CameraViewPreset } from "../../domain/entities/CameraView";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
+import type { VisualizationStyle } from "../../domain/entities/VisualizationStyle";
 import {
   bboxSizeAndVolume,
   IFC_ITEM_RELATIONS_CONFIG,
@@ -14,6 +15,18 @@ import {
   unionBoxes
 } from "./ifcItemEnrichment";
 import { loadIfcProjectUnitsFromBuffer, type IfcProjectUnits } from "./ifcProjectUnits";
+
+interface MaterialSnapshot {
+  transparent: boolean;
+  opacity: number;
+  color: number | undefined;
+  lodColor: number | undefined;
+}
+
+type MaterialLike = THREE.Material & {
+  color?: THREE.Color;
+  lodColor?: THREE.Color;
+};
 
 export class ThatOpenViewerAdapter implements ViewerPort {
   private static readonly STOREYS_CLASSIFICATION = "NavigationStoreys";
@@ -28,6 +41,8 @@ export class ThatOpenViewerAdapter implements ViewerPort {
   private isIfcLoaderReady = false;
   private readonly ifcSourceByModelId = new Map<string, Uint8Array>();
   private readonly projectUnitsByModelId = new Map<string, IfcProjectUnits>();
+  private currentVisualizationStyle: VisualizationStyle = "original";
+  private readonly materialSnapshots = new Map<THREE.Material, MaterialSnapshot>();
 
   async init(container: HTMLElement): Promise<void> {
     const worlds = this.components.get(OBC.Worlds);
@@ -118,6 +133,14 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     this.ifcSourceByModelId.set(modelId, Uint8Array.from(buffer));
     this.projectUnitsByModelId.delete(modelId);
     await ifcLoader.load(buffer, false, modelId);
+
+    if (this.currentVisualizationStyle !== "original") {
+      const fragments = this.components.get(OBC.FragmentsManager);
+      const materials = [...fragments.core.models.materials.list.values()] as THREE.Material[];
+      this.snapshotMaterials(materials);
+      this.applyStyleToMaterials(this.currentVisualizationStyle, materials);
+      fragments.core.update(true);
+    }
   }
 
   async disposeModelIfPresent(modelId: string): Promise<void> {
@@ -389,5 +412,75 @@ export class ThatOpenViewerAdapter implements ViewerPort {
       return null;
     }
     return group.get();
+  }
+
+  setVisualizationStyle(style: VisualizationStyle): void {
+    const fragments = this.components.get(OBC.FragmentsManager);
+    const materials = [...fragments.core.models.materials.list.values()] as THREE.Material[];
+
+    if (style === "original") {
+      this.restoreMaterialSnapshots();
+      this.materialSnapshots.clear();
+      this.currentVisualizationStyle = "original";
+      fragments.core.update(true);
+      return;
+    }
+
+    this.snapshotMaterials(materials);
+    this.applyStyleToMaterials(style, materials);
+    this.currentVisualizationStyle = style;
+    fragments.core.update(true);
+  }
+
+  private snapshotMaterials(materials: THREE.Material[]): void {
+    for (const mat of materials) {
+      if (this.materialSnapshots.has(mat)) continue;
+      const m = mat as MaterialLike;
+      const snapshot: MaterialSnapshot = {
+        transparent: mat.transparent,
+        opacity: mat.opacity,
+        color: m.color instanceof THREE.Color ? m.color.getHex() : undefined,
+        lodColor: m.lodColor instanceof THREE.Color ? m.lodColor.getHex() : undefined
+      };
+      this.materialSnapshots.set(mat, snapshot);
+    }
+  }
+
+  private restoreMaterialSnapshots(): void {
+    for (const [mat, snap] of this.materialSnapshots) {
+      const m = mat as MaterialLike;
+      mat.transparent = snap.transparent;
+      mat.opacity = snap.opacity;
+      if (snap.color !== undefined && m.color instanceof THREE.Color) {
+        m.color.setHex(snap.color);
+      }
+      if (snap.lodColor !== undefined && m.lodColor instanceof THREE.Color) {
+        m.lodColor.setHex(snap.lodColor);
+      }
+      mat.needsUpdate = true;
+    }
+  }
+
+  private applyStyleToMaterials(style: Exclude<VisualizationStyle, "original">, materials: THREE.Material[]): void {
+    for (const mat of materials) {
+      if (mat.userData?.customId) continue;
+      const m = mat as MaterialLike;
+
+      switch (style) {
+        case "white":
+          mat.transparent = false;
+          mat.opacity = 1;
+          if (m.color instanceof THREE.Color) m.color.setHex(0xffffff);
+          if (m.lodColor instanceof THREE.Color) m.lodColor.setHex(0xffffff);
+          break;
+        case "ghost":
+          mat.transparent = true;
+          mat.opacity = 0.12;
+          if (m.color instanceof THREE.Color) m.color.setHex(0xffffff);
+          if (m.lodColor instanceof THREE.Color) m.lodColor.setHex(0xffffff);
+          break;
+      }
+      mat.needsUpdate = true;
+    }
   }
 }

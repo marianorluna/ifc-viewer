@@ -3,6 +3,7 @@ import type { ClassificationGroup, SpatialTreeNode } from "../entities/Classific
 import type { ThemeMode } from "../entities/Theme";
 import type { CameraProjectionMode } from "../entities/CameraProjection";
 import type { CameraViewPreset } from "../entities/CameraView";
+import type { VisualizationStyle } from "../entities/VisualizationStyle";
 
 export interface ViewerPort {
   init(container: HTMLElement): Promise<void>;
@@ -24,4 +25,5 @@ export interface ViewerPort {
   setGridVisible(visible: boolean): void;
   toggleCameraProjection(): Promise<void>;
   getCameraProjection(): CameraProjectionMode;
+  setVisualizationStyle(style: VisualizationStyle): void;
 }

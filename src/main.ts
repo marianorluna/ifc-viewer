@@ -5,6 +5,7 @@ import {
 } from "./domain/constants/ifcLoadLimits";
 import { IfcFileExceedsAbsoluteLimitError } from "./domain/errors/IfcLoadErrors";
 import type { ThemeMode } from "./domain/entities/Theme";
+import type { VisualizationStyle } from "./domain/entities/VisualizationStyle";
 import { ThatOpenViewerAdapter } from "./infrastructure/thatopen/ThatOpenViewerAdapter";
 import { parseElementProperties } from "./presentation/properties/parseElementProperties";
 import {
@@ -171,6 +172,11 @@ const app = async (): Promise<void> => {
   const gridToggleBtn = getRequiredElement<HTMLButtonElement>("btn-toggle-grid");
   const projectionToggleBtn = getRequiredElement<HTMLButtonElement>("btn-toggle-projection");
   const projectionLabel = getRequiredElement<HTMLSpanElement>("viewer-nav-projection-label");
+  const stylesTriggerBtn = getRequiredElement<HTMLButtonElement>("btn-styles-toggle");
+  const stylesFlyout = getRequiredElement<HTMLDivElement>("viewer-style-flyout");
+  const styleOriginalBtn = getRequiredElement<HTMLButtonElement>("btn-style-original");
+  const styleWhiteBtn = getRequiredElement<HTMLButtonElement>("btn-style-white");
+  const styleGhostBtn = getRequiredElement<HTMLButtonElement>("btn-style-ghost");
 
   const VIEWER_NAV_COLLAPSED_KEY = "arqfi_viewer_nav_collapsed";
   const VIEWER_TOOLBAR_COLLAPSED_KEY = "arqfi_viewer_toolbar_collapsed";
@@ -414,6 +420,69 @@ const app = async (): Promise<void> => {
       syncProjectionToggleUi();
     });
   });
+
+  const allStyleBtns: ReadonlyArray<[HTMLButtonElement, VisualizationStyle]> = [
+    [styleOriginalBtn, "original"],
+    [styleWhiteBtn, "white"],
+    [styleGhostBtn, "ghost"]
+  ];
+
+  const syncStyleUi = (active: VisualizationStyle): void => {
+    for (const [btn, style] of allStyleBtns) {
+      const isActive = style === active;
+      btn.classList.toggle("viewer-nav-btn--active", isActive);
+      btn.setAttribute("aria-checked", String(isActive));
+    }
+    const hasNonDefault = active !== "original";
+    stylesTriggerBtn.classList.toggle("viewer-nav-btn--active", hasNonDefault);
+  };
+
+  const positionStyleFlyout = (): void => {
+    const btnRect = stylesTriggerBtn.getBoundingClientRect();
+    const wrapperRect = viewerContainer.parentElement!.getBoundingClientRect();
+    const top = btnRect.top - wrapperRect.top;
+    const right = wrapperRect.right - btnRect.left + 8;
+    stylesFlyout.style.top = `${top}px`;
+    stylesFlyout.style.right = `${right}px`;
+  };
+
+  const openStyleFlyout = (): void => {
+    positionStyleFlyout();
+    stylesFlyout.hidden = false;
+    stylesTriggerBtn.setAttribute("aria-expanded", "true");
+  };
+
+  const closeStyleFlyout = (): void => {
+    stylesFlyout.hidden = true;
+    stylesTriggerBtn.setAttribute("aria-expanded", "false");
+  };
+
+  stylesTriggerBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (stylesFlyout.hidden) {
+      openStyleFlyout();
+    } else {
+      closeStyleFlyout();
+    }
+  });
+
+  stylesFlyout.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  document.addEventListener("click", () => {
+    if (!stylesFlyout.hidden) {
+      closeStyleFlyout();
+    }
+  });
+
+  for (const [btn, style] of allStyleBtns) {
+    btn.addEventListener("click", () => {
+      viewerFacade.setVisualizationStyle(style);
+      syncStyleUi(style);
+      closeStyleFlyout();
+    });
+  }
 
   ifcInput.addEventListener("change", async () => {
     const file = ifcInput.files?.[0];

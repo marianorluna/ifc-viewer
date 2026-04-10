@@ -35,7 +35,8 @@ const createViewerStub = (
     setCameraView: async () => {},
     setGridVisible: () => {},
     toggleCameraProjection: async () => {},
-    getCameraProjection: () => "Perspective"
+    getCameraProjection: () => "Perspective",
+    setVisualizationStyle: () => {}
   };
 };
 

@@ -3,6 +3,7 @@ import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ThemeMode } from "../../domain/entities/Theme";
 import type { CameraProjectionMode } from "../../domain/entities/CameraProjection";
 import type { CameraViewPreset } from "../../domain/entities/CameraView";
+import type { VisualizationStyle } from "../../domain/entities/VisualizationStyle";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 import { BuildNavigationDataUseCase } from "../use-cases/BuildNavigationDataUseCase";
 import { ClearSelectionUseCase } from "../use-cases/ClearSelectionUseCase";
@@ -103,6 +104,10 @@ export class ViewerFacade {
 
   getCameraProjection(): CameraProjectionMode {
     return this.viewer.getCameraProjection();
+  }
+
+  setVisualizationStyle(style: VisualizationStyle): void {
+    this.viewer.setVisualizationStyle(style);
   }
 
   onSelectionChange(

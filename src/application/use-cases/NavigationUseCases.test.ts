@@ -38,7 +38,8 @@ describe("Navigation use-cases", () => {
       setCameraView: async () => {},
       setGridVisible: () => {},
       toggleCameraProjection: async () => {},
-      getCameraProjection: () => "Perspective"
+      getCameraProjection: () => "Perspective",
+      setVisualizationStyle: () => {}
     };
 
     await new BuildNavigationDataUseCase(viewer).execute();

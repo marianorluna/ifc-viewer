@@ -4,6 +4,7 @@ import * as OBF from "@thatopen/components-front";
 import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ThemeMode } from "../../domain/entities/Theme";
+import type { CameraProjectionMode } from "../../domain/entities/CameraProjection";
 import type { CameraViewPreset } from "../../domain/entities/CameraView";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 import {
@@ -20,7 +21,7 @@ export class ThatOpenViewerAdapter implements ViewerPort {
   private static readonly WEB_IFC_VERSION = "0.0.77";
 
   private readonly components = new OBC.Components();
-  private world?: OBC.SimpleWorld<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>;
+  private world?: OBC.SimpleWorld<OBC.SimpleScene, OBC.OrthoPerspectiveCamera, OBC.SimpleRenderer>;
   private grid?: OBC.SimpleGrid;
   private highlighter?: OBF.Highlighter;
   private selectionCallback?: (selection: SelectionMap) => Promise<void> | void;
@@ -30,18 +31,24 @@ export class ThatOpenViewerAdapter implements ViewerPort {
 
   async init(container: HTMLElement): Promise<void> {
     const worlds = this.components.get(OBC.Worlds);
-    const world = worlds.create<OBC.SimpleScene, OBC.SimpleCamera, OBC.SimpleRenderer>();
+    const world = worlds.create<OBC.SimpleScene, OBC.OrthoPerspectiveCamera, OBC.SimpleRenderer>();
 
     world.scene = new OBC.SimpleScene(this.components);
     world.renderer = new OBC.SimpleRenderer(this.components, container);
-    world.camera = new OBC.SimpleCamera(this.components);
+    world.camera = new OBC.OrthoPerspectiveCamera(this.components);
 
     this.components.init();
     world.scene.setup();
+    world.scene.three.background = new THREE.Color("#f6f7f8");
     await world.camera.controls.setLookAt(12, 8, 12, 0, 0, 0);
 
     const grid = this.components.get(OBC.Grids).create(world);
     this.grid = grid;
+    /* `setTheme` usa `this.world`; debe asignarse antes del tema inicial y del fetch largo del worker. */
+    this.world = world;
+    world.camera.projection.onChanged.add(() => {
+      this.applyActiveCameraToFragmentModels();
+    });
     this.setTheme("light");
 
     const fragments = this.components.get(OBC.FragmentsManager);
@@ -59,6 +66,7 @@ export class ThatOpenViewerAdapter implements ViewerPort {
       world.scene.three.add(model.object);
       fragments.core.update(true);
     });
+    this.applyActiveCameraToFragmentModels();
 
     this.components.get(OBC.Raycasters).get(world);
     const highlighter = this.components.get(OBF.Highlighter);
@@ -80,7 +88,6 @@ export class ThatOpenViewerAdapter implements ViewerPort {
       await this.selectionCallback(selection as SelectionMap);
     });
 
-    this.world = world;
     this.highlighter = highlighter;
   }
 
@@ -261,6 +268,33 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     }
   }
 
+  setGridVisible(visible: boolean): void {
+    const grid = this.grid;
+    if (!grid) {
+      return;
+    }
+
+    grid.visible = visible;
+  }
+
+  async toggleCameraProjection(): Promise<void> {
+    const world = this.world;
+    if (!world) {
+      return;
+    }
+
+    await world.camera.projection.toggle();
+  }
+
+  getCameraProjection(): CameraProjectionMode {
+    const world = this.world;
+    if (!world) {
+      return "Perspective";
+    }
+
+    return world.camera.projection.current;
+  }
+
   setTheme(mode: ThemeMode): void {
     const world = this.world;
     if (!world) {
@@ -281,6 +315,19 @@ export class ThatOpenViewerAdapter implements ViewerPort {
     world.scene.three.background = new THREE.Color(palette.sceneBg);
     if (this.grid?.material.uniforms.uColor) {
       this.grid.material.uniforms.uColor.value = new THREE.Color(palette.gridColor);
+    }
+  }
+
+  private applyActiveCameraToFragmentModels(): void {
+    const world = this.world;
+    if (!world) {
+      return;
+    }
+
+    const threeCamera = world.camera.three;
+    const fragments = this.components.get(OBC.FragmentsManager);
+    for (const [, model] of fragments.list) {
+      model.useCamera(threeCamera);
     }
   }
 

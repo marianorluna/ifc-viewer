@@ -76,6 +76,7 @@ body {
 #app-grid {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template:
     "header header header" var(--topbar-height)
@@ -192,17 +193,6 @@ body[data-theme="light"] #icon-theme-light {
 
 body[data-theme="dark"] #icon-theme-dark {
   display: block;
-}
-
-/* Hamburguesa solo tablet / móvil */
-.topbar-only-mobile {
-  display: none !important;
-}
-
-@media (max-width: 1024px) {
-  .topbar-only-mobile {
-    display: inline-flex !important;
-  }
 }
 
 /* =====================
@@ -326,6 +316,12 @@ body[data-theme="dark"] #icon-theme-dark {
   }
 }
 
+@media (max-width: 1024px) {
+  body:not(.sidebar-open) .sidebar-expand-btn {
+    display: inline-flex;
+  }
+}
+
 #sidebar-resizer {
   width: 8px;
   height: 100%;
@@ -364,15 +360,22 @@ body[data-theme="dark"] #icon-theme-dark {
   right: 8px;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 4px;
   z-index: 25;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 10px;
-  padding: 6px;
+  padding: 6px 8px;
   box-shadow: 0 2px 10px rgb(0 0 0 / 14%);
   opacity: 0.94;
   transition: opacity 0.15s ease, padding 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Ancho al contenido: el ancho lo marca la fila más ancha; padding horizontal simétrico en panel y botones */
+#viewer-nav:not(.viewer-nav--collapsed) {
+  width: max-content;
+  max-width: min(100vw - 24px, 280px);
 }
 
 #viewer-nav:hover {
@@ -391,7 +394,7 @@ body[data-theme="dark"] #icon-theme-dark {
 
 .viewer-nav-toggle {
   flex-shrink: 0;
-  width: 100%;
+  width: auto;
   min-height: 30px;
   padding: 0;
   display: inline-flex;
@@ -408,6 +411,12 @@ body[data-theme="dark"] #icon-theme-dark {
 .viewer-nav-toggle:hover {
   background: rgb(59 130 246 / 12%);
   border-color: #3b82f6;
+}
+
+#viewer-nav:not(.viewer-nav--collapsed) .viewer-nav-toggle {
+  justify-content: flex-start;
+  padding: 0 8px;
+  align-self: stretch;
 }
 
 #viewer-nav.viewer-nav--collapsed .viewer-nav-toggle {
@@ -451,7 +460,11 @@ body[data-theme="dark"] #icon-theme-dark {
 .viewer-nav-body {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 3px;
+  width: auto;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 #viewer-nav.viewer-nav--collapsed .viewer-nav-body {
@@ -463,17 +476,25 @@ body[data-theme="dark"] #icon-theme-dark {
   background: transparent;
   color: var(--tree-button-text);
   border-radius: 6px;
-  width: 68px;
-  height: 28px;
+  width: auto;
+  min-height: 28px;
+  height: auto;
+  padding: 4px 8px;
+  box-sizing: border-box;
   cursor: pointer;
   font-size: 11px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 5px;
-  transition: background-color 0.14s ease, border-color 0.14s ease;
+  justify-content: flex-start;
+  gap: 6px;
+  transition: background-color 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
   white-space: nowrap;
+  align-self: stretch;
+}
+
+.viewer-nav-btn.viewer-nav-btn--grid-off {
+  opacity: 0.72;
 }
 
 .viewer-nav-btn svg {
@@ -499,7 +520,7 @@ body[data-theme="dark"] #icon-theme-dark {
   margin: 2px 0;
 }
 
-/* -- Toolbar de acciones flotante (centro inferior) -- */
+/* -- Toolbar de acciones flotante (centro inferior, colapsable) -- */
 
 #viewer-toolbar {
   position: absolute;
@@ -507,20 +528,111 @@ body[data-theme="dark"] #icon-theme-dark {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 4px;
   z-index: 10;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 10px;
-  padding: 5px 8px;
+  padding: 5px 6px 5px 8px;
   box-shadow: 0 2px 12px rgb(0 0 0 / 16%);
   opacity: 0.94;
-  transition: opacity 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    bottom 0.22s ease,
+    padding 0.22s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 #viewer-toolbar:hover {
   opacity: 1;
+}
+
+#viewer-toolbar.viewer-toolbar--collapsed {
+  bottom: 0;
+  padding: 0;
+  gap: 0;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+#viewer-toolbar.viewer-toolbar--collapsed:hover {
+  opacity: 1;
+}
+
+.viewer-toolbar-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+#viewer-toolbar.viewer-toolbar--collapsed .viewer-toolbar-body,
+#viewer-toolbar.viewer-toolbar--collapsed .viewer-toolbar-sep-for-toggle {
+  display: none;
+}
+
+.viewer-toolbar-sep-for-toggle {
+  flex-shrink: 0;
+}
+
+.viewer-toolbar-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 34px;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--tree-button-text);
+  cursor: pointer;
+  transition: background-color 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  box-sizing: border-box;
+}
+
+.viewer-toolbar-toggle:hover {
+  background: rgb(59 130 246 / 10%);
+  color: var(--bim-ui_accent-base);
+}
+
+.viewer-toolbar-toggle-icon {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.viewer-toolbar-toggle-icon--collapsed {
+  display: none;
+}
+
+#viewer-toolbar.viewer-toolbar--collapsed .viewer-toolbar-toggle {
+  width: 52px;
+  min-width: 52px;
+  padding: 8px 0 6px;
+  border: 1px solid var(--panel-border);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  background: var(--panel-bg);
+  box-shadow: 0 -2px 10px rgb(0 0 0 / 12%);
+}
+
+#viewer-toolbar.viewer-toolbar--collapsed .viewer-toolbar-toggle-icon--expanded {
+  display: none;
+}
+
+#viewer-toolbar.viewer-toolbar--collapsed .viewer-toolbar-toggle-icon--collapsed {
+  display: block;
 }
 
 .viewer-toolbar-btn {
@@ -607,6 +719,7 @@ body[data-theme="dark"] #icon-theme-dark {
 
 .properties-body {
   max-height: 70vh;
+  max-height: 70dvh;
   overflow: auto;
   border: 1px solid var(--panel-border);
   border-radius: 6px;
@@ -862,9 +975,17 @@ body[data-theme="dark"] #icon-theme-dark {
     height: 32px;
   }
 
-  #viewer-toolbar {
+  #viewer-toolbar:not(.viewer-toolbar--collapsed) {
     bottom: 10px;
-    padding: 4px 6px;
+    padding: 4px 4px 4px 6px;
+    gap: 2px;
+  }
+
+  #viewer-toolbar.viewer-toolbar--collapsed {
+    bottom: 0;
+  }
+
+  .viewer-toolbar-body {
     gap: 2px;
   }
 

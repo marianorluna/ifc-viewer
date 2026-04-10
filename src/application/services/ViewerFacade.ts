@@ -1,6 +1,7 @@
 import type { ClassificationGroup, ClassificationKey, SpatialTreeNode } from "../../domain/entities/Classification";
 import type { SelectionMap } from "../../domain/entities/Selection";
 import type { ThemeMode } from "../../domain/entities/Theme";
+import type { CameraProjectionMode } from "../../domain/entities/CameraProjection";
 import type { CameraViewPreset } from "../../domain/entities/CameraView";
 import type { ViewerPort } from "../../domain/ports/ViewerPort";
 import { BuildNavigationDataUseCase } from "../use-cases/BuildNavigationDataUseCase";
@@ -82,6 +83,18 @@ export class ViewerFacade {
 
   async setCameraView(preset: CameraViewPreset): Promise<void> {
     await this.viewer.setCameraView(preset);
+  }
+
+  setGridVisible(visible: boolean): void {
+    this.viewer.setGridVisible(visible);
+  }
+
+  async toggleCameraProjection(): Promise<void> {
+    await this.viewer.toggleCameraProjection();
+  }
+
+  getCameraProjection(): CameraProjectionMode {
+    return this.viewer.getCameraProjection();
   }
 
   onSelectionChange(

@@ -1,6 +1,7 @@
 import type { SelectionMap } from "../entities/Selection";
 import type { ClassificationGroup, SpatialTreeNode } from "../entities/Classification";
 import type { ThemeMode } from "../entities/Theme";
+import type { CameraProjectionMode } from "../entities/CameraProjection";
 import type { CameraViewPreset } from "../entities/CameraView";
 
 export interface ViewerPort {
@@ -19,4 +20,7 @@ export interface ViewerPort {
   showAll(): Promise<void>;
   setTheme(mode: ThemeMode): void;
   setCameraView(preset: CameraViewPreset): Promise<void>;
+  setGridVisible(visible: boolean): void;
+  toggleCameraProjection(): Promise<void>;
+  getCameraProjection(): CameraProjectionMode;
 }

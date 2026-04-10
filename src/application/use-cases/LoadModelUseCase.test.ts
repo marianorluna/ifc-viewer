@@ -24,7 +24,10 @@ describe("LoadModelUseCase", () => {
       showClassificationGroup: async () => {},
       showAll: async () => {},
       setTheme: () => {},
-      setCameraView: async () => {}
+      setCameraView: async () => {},
+      setGridVisible: () => {},
+      toggleCameraProjection: async () => {},
+      getCameraProjection: () => "Perspective"
     };
 
     const useCase = new LoadModelUseCase(viewer);

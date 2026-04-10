@@ -36,13 +36,6 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
           </button>
-          <button id="btn-sidebar-toggle" class="topbar-button topbar-icon-btn topbar-only-mobile" aria-label="Abrir panel lateral" title="Abrir panel lateral">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <line x1="3" y1="12" x2="21" y2="12"/>
-              <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
         </div>
       </header>
 
@@ -182,7 +175,7 @@
               <path d="M2 15.5l10 5.5 10-5.5"/>
               <path d="M2 12l10 5.5 10-5.5"/>
             </svg>
-            <span>Iso</span>
+            <span>Isométrica</span>
           </button>
           <button class="viewer-nav-btn" id="btn-nav-top" title="Vista superior">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -208,35 +201,83 @@
             </svg>
             <span>Lateral</span>
           </button>
+          <div class="viewer-nav-sep" aria-hidden="true"></div>
+          <button
+            type="button"
+            class="viewer-nav-btn"
+            id="btn-toggle-grid"
+            title="Ocultar rejilla"
+            aria-label="Ocultar rejilla"
+            aria-pressed="true"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M3 7h18M3 12h18M3 17h18"/>
+              <path d="M7 3v18M12 3v18M17 3v18"/>
+            </svg>
+            <span>Rejilla</span>
+          </button>
+          <div class="viewer-nav-sep" aria-hidden="true"></div>
+          <button
+            type="button"
+            class="viewer-nav-btn"
+            id="btn-toggle-projection"
+            title="Cambiar a vista ortogonal"
+            aria-label="Cambiar a vista ortogonal"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2 2 7v10l10 5 10-5V7L12 2z"/>
+              <path d="M12 22V12"/>
+              <path d="m2 7 10 5 10-5"/>
+            </svg>
+            <span id="viewer-nav-projection-label">Perspectiva</span>
+          </button>
           </div>
         </nav>
 
-        <!-- Barra de acciones flotante inferior -->
+        <!-- Barra de acciones flotante inferior (colapsable) -->
         <div id="viewer-toolbar" role="toolbar" aria-label="Acciones del visor">
-          <button id="btn-load" class="viewer-toolbar-btn" title="Cargar archivo IFC">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
+          <div id="viewer-toolbar-body" class="viewer-toolbar-body">
+            <button id="btn-load" class="viewer-toolbar-btn" title="Cargar archivo IFC">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Cargar IFC
+            </button>
+            <div class="viewer-toolbar-sep" aria-hidden="true"></div>
+            <button id="btn-clear-selection" class="viewer-toolbar-btn" title="Limpiar selección actual">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/>
+                <path d="M14 11v6"/>
+              </svg>
+              Limpiar selección
+            </button>
+            <button id="btn-show-all" class="viewer-toolbar-btn" title="Mostrar todos los elementos">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              Mostrar todo
+            </button>
+          </div>
+          <div class="viewer-toolbar-sep viewer-toolbar-sep-for-toggle" aria-hidden="true"></div>
+          <button
+            type="button"
+            id="btn-toolbar-toggle"
+            class="viewer-toolbar-toggle"
+            aria-expanded="true"
+            aria-controls="viewer-toolbar-body"
+            title="Ocultar barra de acciones"
+          >
+            <svg class="viewer-toolbar-toggle-icon viewer-toolbar-toggle-icon--expanded" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
             </svg>
-            Cargar IFC
-          </button>
-          <div class="viewer-toolbar-sep"></div>
-          <button id="btn-clear-selection" class="viewer-toolbar-btn" title="Limpiar selección actual">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-              <path d="M10 11v6"/>
-              <path d="M14 11v6"/>
+            <svg class="viewer-toolbar-toggle-icon viewer-toolbar-toggle-icon--collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="18 15 12 9 6 15"/>
             </svg>
-            Limpiar selección
-          </button>
-          <button id="btn-show-all" class="viewer-toolbar-btn" title="Mostrar todos los elementos">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-            Mostrar todo
           </button>
         </div>
       </div>

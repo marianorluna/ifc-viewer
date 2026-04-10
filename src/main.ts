@@ -139,11 +139,12 @@ const app = async (): Promise<void> => {
 
   const viewerContainer = getRequiredElement<HTMLDivElement>("viewer-container");
   const ifcInput = getRequiredElement<HTMLInputElement>("ifc-input");
+  const viewerToolbar = getRequiredElement<HTMLDivElement>("viewer-toolbar");
+  const toolbarToggleBtn = getRequiredElement<HTMLButtonElement>("btn-toolbar-toggle");
   const loadButton = getRequiredElement<HTMLButtonElement>("btn-load");
   const clearSelectionButton = getRequiredElement<HTMLButtonElement>("btn-clear-selection");
   const showAllButton = getRequiredElement<HTMLButtonElement>("btn-show-all");
   const toggleThemeButton = getRequiredElement<HTMLButtonElement>("btn-toggle-theme");
-  const sidebarToggleButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-toggle");
   const sidebarCollapseButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-collapse");
   const sidebarExpandButton = getRequiredElement<HTMLButtonElement>("btn-sidebar-expand");
   const sidebarResizer = getRequiredElement<HTMLDivElement>("sidebar-resizer");
@@ -159,8 +160,12 @@ const app = async (): Promise<void> => {
   const navTopBtn = getRequiredElement<HTMLButtonElement>("btn-nav-top");
   const navFrontBtn = getRequiredElement<HTMLButtonElement>("btn-nav-front");
   const navRightBtn = getRequiredElement<HTMLButtonElement>("btn-nav-right");
+  const gridToggleBtn = getRequiredElement<HTMLButtonElement>("btn-toggle-grid");
+  const projectionToggleBtn = getRequiredElement<HTMLButtonElement>("btn-toggle-projection");
+  const projectionLabel = getRequiredElement<HTMLSpanElement>("viewer-nav-projection-label");
 
   const VIEWER_NAV_COLLAPSED_KEY = "arqfi_viewer_nav_collapsed";
+  const VIEWER_TOOLBAR_COLLAPSED_KEY = "arqfi_viewer_toolbar_collapsed";
 
   const applyViewerNavCollapsed = (collapsed: boolean): void => {
     viewerNav.classList.toggle("viewer-nav--collapsed", collapsed);
@@ -176,11 +181,48 @@ const app = async (): Promise<void> => {
     }
   };
 
+  const applyViewerToolbarCollapsed = (collapsed: boolean): void => {
+    viewerToolbar.classList.toggle("viewer-toolbar--collapsed", collapsed);
+    toolbarToggleBtn.setAttribute("aria-expanded", String(!collapsed));
+    const showLabel = "Mostrar barra de acciones";
+    const hideLabel = "Ocultar barra de acciones";
+    toolbarToggleBtn.title = collapsed ? showLabel : hideLabel;
+    toolbarToggleBtn.setAttribute("aria-label", collapsed ? showLabel : hideLabel);
+    try {
+      sessionStorage.setItem(VIEWER_TOOLBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* ignore quota / private mode */
+    }
+  };
+
   const viewerFacade = new ViewerFacade(new ThatOpenViewerAdapter());
   await viewerFacade.init(viewerContainer);
   let currentTheme: ThemeMode = "light";
   document.body.dataset.theme = currentTheme;
   viewerFacade.setTheme(currentTheme);
+
+  let gridVisible = true;
+  const syncGridToggleUi = (): void => {
+    gridToggleBtn.setAttribute("aria-pressed", String(gridVisible));
+    const hideLabel = "Ocultar rejilla";
+    const showLabel = "Mostrar rejilla";
+    gridToggleBtn.title = gridVisible ? hideLabel : showLabel;
+    gridToggleBtn.setAttribute("aria-label", gridVisible ? hideLabel : showLabel);
+    gridToggleBtn.classList.toggle("viewer-nav-btn--grid-off", !gridVisible);
+  };
+  syncGridToggleUi();
+
+  const syncProjectionToggleUi = (): void => {
+    const mode = viewerFacade.getCameraProjection();
+    const isPerspective = mode === "Perspective";
+    projectionLabel.textContent = isPerspective ? "Perspectiva" : "Ortogonal";
+    projectionToggleBtn.title = isPerspective ? "Cambiar a vista ortogonal" : "Cambiar a vista en perspectiva";
+    projectionToggleBtn.setAttribute(
+      "aria-label",
+      isPerspective ? "Cambiar a vista ortogonal" : "Cambiar a vista en perspectiva"
+    );
+  };
+  syncProjectionToggleUi();
 
   let propertiesViewMode: "formatted" | "json" = "formatted";
   let lastPropertiesPayload: Record<string, unknown> | null = null;
@@ -220,10 +262,6 @@ const app = async (): Promise<void> => {
     ifcInput.click();
   });
 
-  sidebarToggleButton.addEventListener("click", () => {
-    document.body.classList.toggle("sidebar-open");
-  });
-
   sidebarCollapseButton.addEventListener("click", () => {
     if (window.innerWidth <= 1024) {
       document.body.classList.remove("sidebar-open");
@@ -233,7 +271,11 @@ const app = async (): Promise<void> => {
   });
 
   sidebarExpandButton.addEventListener("click", () => {
-    document.body.classList.remove("sidebar-desktop-collapsed");
+    if (window.innerWidth <= 1024) {
+      document.body.classList.add("sidebar-open");
+    } else {
+      document.body.classList.remove("sidebar-desktop-collapsed");
+    }
   });
 
   const setSidebarWidthByRatio = (ratio: number): void => {
@@ -321,11 +363,37 @@ const app = async (): Promise<void> => {
   }
   applyViewerNavCollapsed(initialNavCollapsed);
 
+  let initialToolbarCollapsed = false;
+  try {
+    if (sessionStorage.getItem(VIEWER_TOOLBAR_COLLAPSED_KEY) === "1") {
+      initialToolbarCollapsed = true;
+    }
+  } catch {
+    initialToolbarCollapsed = false;
+  }
+  applyViewerToolbarCollapsed(initialToolbarCollapsed);
+
+  toolbarToggleBtn.addEventListener("click", () => {
+    applyViewerToolbarCollapsed(!viewerToolbar.classList.contains("viewer-toolbar--collapsed"));
+  });
+
   navFitBtn.addEventListener("click", () => { void viewerFacade.setCameraView("fit"); });
   navIsoBtn.addEventListener("click", () => { void viewerFacade.setCameraView("isometric"); });
   navTopBtn.addEventListener("click", () => { void viewerFacade.setCameraView("top"); });
   navFrontBtn.addEventListener("click", () => { void viewerFacade.setCameraView("front"); });
   navRightBtn.addEventListener("click", () => { void viewerFacade.setCameraView("right"); });
+
+  gridToggleBtn.addEventListener("click", () => {
+    gridVisible = !gridVisible;
+    viewerFacade.setGridVisible(gridVisible);
+    syncGridToggleUi();
+  });
+
+  projectionToggleBtn.addEventListener("click", () => {
+    void viewerFacade.toggleCameraProjection().then(() => {
+      syncProjectionToggleUi();
+    });
+  });
 
   ifcInput.addEventListener("change", async () => {
     const file = ifcInput.files?.[0];
